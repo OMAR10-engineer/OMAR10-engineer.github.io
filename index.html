@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
@@ -112,11 +73,11 @@
             <input type="number" id="memorized-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
           </div>
           <div>
-            <label for="read-today" id="read-today-label" class="block text-sm font-medium mb-1">Verses read today</label>
+            <label for="read-today" id="read-today-label" class="block text-sm font-medium mb-1">Pages read today</label>
             <input type="number" id="read-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
           </div>
           <div>
-            <label for="revised-today" id="revised-today-label" class="block text-sm font-medium mb-1">Verses revised today</label>
+            <label for="revised-today" id="revised-today-label" class="block text-sm font-medium mb-1">Pages revised today</label>
             <input type="number" id="revised-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
           </div>
           <button id="daily-submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Submit</button>
@@ -134,11 +95,11 @@
             <input type="number" id="edit-memorized" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
           </div>
           <div>
-            <label for="edit-read" id="edit-read-label" class="block text-sm font-medium mb-1">Verses read today</label>
+            <label for="edit-read" id="edit-read-label" class="block text-sm font-medium mb-1">Pages read today</label>
             <input type="number" id="edit-read" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
           </div>
           <div>
-            <label for="edit-revised" id="edit-revised-label" class="block text-sm font-medium mb-1">Verses revised today</label>
+            <label for="edit-revised" id="edit-revised-label" class="block text-sm font-medium mb-1">Pages revised today</label>
             <input type="number" id="edit-revised" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
           </div>
           <button id="edit-submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Save Changes</button>
@@ -179,14 +140,14 @@
       <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
         <div class="flex items-center mb-2">
           <i data-feather="book-open" aria-label="Book open icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-read-title" class="font-medium">Total Verses Read</h3>
+          <h3 id="total-read-title" class="font-medium">Total Pages Read</h3>
         </div>
         <p id="total-read" class="text-2xl font-bold mb-2">0</p>
       </div>
       <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
         <div class="flex items-center mb-2">
           <i data-feather="repeat" aria-label="Repeat icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-revised-title" class="font-medium">Total Verses Revised</h3>
+          <h3 id="total-revised-title" class="font-medium">Total Pages Revised</h3>
         </div>
         <p id="total-revised" class="text-2xl font-bold mb-2">0</p>
       </div>
@@ -203,6 +164,20 @@
           <h3 id="longest-streak-title" class="font-medium">Longest Streak</h3>
         </div>
         <p id="longest-streak" class="text-2xl font-bold mb-2">0 days</p>
+      </div>
+      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
+        <div class="flex items-center mb-2">
+          <i data-feather="trending-up" aria-label="Trending up icon" class="text-purple-400 w-5 h-5 mr-2"></i>
+          <h3 id="level-title" class="font-medium">Level</h3>
+        </div>
+        <p id="level" class="text-2xl font-bold mb-2">1</p>
+      </div>
+      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
+        <div class="flex items-center mb-2">
+          <i data-feather="star" aria-label="Star icon" class="text-purple-400 w-5 h-5 mr-2"></i>
+          <h3 id="points-title" class="font-medium">Points</h3>
+        </div>
+        <p id="points" class="text-2xl font-bold mb-2">0</p>
       </div>
     </div>
 
@@ -252,23 +227,25 @@
         logout: "Logout",
         dailyProgress: "Today's Progress",
         memorizedToday: "Verses memorized today",
-        readToday: "Verses read today",
-        revisedToday: "Verses revised today",
+        readToday: "Pages read today",
+        revisedToday: "Pages revised today",
         submit: "Submit",
         submittedToday: "You have already submitted for today.",
         editToday: "Edit Today's Submission",
         editProgress: "Edit Today's Progress",
         editMemorized: "Verses memorized today",
-        editRead: "Verses read today",
-        editRevised: "Verses revised today",
+        editRead: "Pages read today",
+        editRevised: "Pages revised today",
         saveChanges: "Save Changes",
         totalMemorized: "Total Verses Memorized",
         surahsMemorized: "Surahs Fully Memorized",
         currentSurah: "Current Surah",
-        totalRead: "Total Verses Read",
-        totalRevised: "Total Verses Revised",
+        totalRead: "Total Pages Read",
+        totalRevised: "Total Pages Revised",
         currentStreak: "Current Streak",
         longestStreak: "Longest Streak",
+        level: "Level",
+        points: "Points",
         badges: "Badges",
         motivation: "Motivation",
         nextMilestone: "Next Milestone",
@@ -284,398 +261,4 @@
         signupName: "الاسم",
         signupEmail: "البريد الإلكتروني",
         signupPassword: "كلمة المرور",
-        signupMemorized: "إجمالي الآيات المحفوظة حتى الآن",
-        signupBtn: "التسجيل",
-        haveAccount: "لديك حساب؟",
-        loginLink: "تسجيل الدخول",
-        welcome: "مرحبًا",
-        logout: "تسجيل الخروج",
-        dailyProgress: "تقدم اليوم",
-        memorizedToday: "الآيات المحفوظة اليوم",
-        readToday: "الآيات المقروءة اليوم",
-        revisedToday: "الآيات المراجعة اليوم",
-        submit: "إرسال",
-        submittedToday: "لقد قدمت بالفعل اليوم.",
-        editToday: "تعديل تقديم اليوم",
-        editProgress: "تعديل تقدم اليوم",
-        editMemorized: "الآيات المحفوظة اليوم",
-        editRead: "الآيات المقروءة اليوم",
-        editRevised: "الآيات المراجعة اليوم",
-        saveChanges: "حفظ التغييرات",
-        totalMemorized: "إجمالي الآيات المحفوظة",
-        surahsMemorized: "السور المحفوظة بالكامل",
-        currentSurah: "السورة الحالية",
-        totalRead: "إجمالي الآيات المقروءة",
-        totalRevised: "إجمالي الآيات المراجعة",
-        currentStreak: "السلسلة الحالية",
-        longestStreak: "أطول سلسلة",
-        badges: "الشارات",
-        motivation: "التحفيز",
-        nextMilestone: "المعلم التالي",
-        startMemorizing: "ابدأ الحفظ"
-      }
-    };
-
-    // Badge Definitions
-    const badges = [
-      { id: 1, name: "Beginner", nameAr: "مبتدئ", verses: 10, icon: "star" },
-      { id: 2, name: "Learner", nameAr: "متعلم", verses: 50, icon: "book" },
-      { id: 3, name: "Achiever", nameAr: "منجز", verses: 100, icon: "award" },
-      { id: 4, name: "Master", nameAr: "متقن", verses: 500, icon: "trophy" }
-    ];
-
-    // DOM Elements
-    const authSection = document.getElementById('auth-section');
-    const mainApp = document.getElementById('main-app');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const showSignup = document.getElementById('show-signup');
-    const showLogin = document.getElementById('show-login');
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const dailySubmit = document.getElementById('daily-submit');
-    const editTodayBtn = document.getElementById('edit-today-btn');
-    const editSubmit = document.getElementById('edit-submit');
-    const themeToggle = document.getElementById('theme-toggle');
-    const languageToggle = document.getElementById('language-toggle');
-    const htmlElement = document.documentElement;
-
-    // Check login status and theme on load
-    if (localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userData')) {
-      showMainApp();
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-      htmlElement.classList.add('dark');
-      themeToggle.querySelector('i').setAttribute('data-feather', 'sun');
-    }
-    const lang = localStorage.getItem('language') || 'en';
-    languageToggle.value = lang;
-    updateLanguage(lang);
-
-    // Theme toggle
-    themeToggle.addEventListener('click', () => {
-      htmlElement.classList.toggle('dark');
-      localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
-      themeToggle.querySelector('i').setAttribute('data-feather', htmlElement.classList.contains('dark') ? 'sun' : 'moon');
-      feather.replace();
-    });
-
-    // Language toggle
-    languageToggle.addEventListener('change', (e) => {
-      const lang = e.target.value;
-      localStorage.setItem('language', lang);
-      updateLanguage(lang);
-    });
-
-    // Toggle between login and signup forms
-    showSignup.addEventListener('click', (e) => {
-      e.preventDefault();
-      loginForm.classList.add('hidden');
-      signupForm.classList.remove('hidden');
-    });
-
-    showLogin.addEventListener('click', (e) => {
-      e.preventDefault();
-      signupForm.classList.add('hidden');
-      loginForm.classList.remove('hidden');
-    });
-
-    // Login handler
-    loginBtn.addEventListener('click', () => {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      if (userData && userData.email === email && userData.password === password) {
-        localStorage.setItem('isLoggedIn', 'true');
-        showMainApp();
-      } else {
-        alert('Invalid credentials');
-      }
-    });
-
-    // Signup handler
-    signupBtn.addEventListener('click', () => {
-      const name = document.getElementById('signup-name').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      const totalVersesMemorized = parseInt(document.getElementById('signup-memorized').value) || 0;
-      const userData = {
-        name,
-        email,
-        password,
-        totalVersesMemorized,
-        totalVersesRead: 0,
-        totalVersesRevised: 0,
-        currentStreak: 0,
-        longestStreak: 0,
-        lastActiveDate: null,
-        dailyLogs: [],
-        badges: []
-      };
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('isLoggedIn', 'true');
-      showMainApp();
-    });
-
-    // Logout handler
-    logoutBtn.addEventListener('click', () => {
-      localStorage.setItem('isLoggedIn', 'false');
-      mainApp.classList.add('hidden');
-      authSection.classList.remove('hidden');
-    });
-
-    // Daily submission handler
-    dailySubmit.addEventListener('click', () => {
-      handleDailySubmission();
-    });
-
-    // Edit today's submission
-    editTodayBtn.addEventListener('click', () => {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), new Date()));
-      if (todayLog) {
-        document.getElementById('edit-memorized').value = todayLog.memorized;
-        document.getElementById('edit-read').value = todayLog.read;
-        document.getElementById('edit-revised').value = todayLog.revised;
-        document.getElementById('daily-message').classList.add('hidden');
-        document.getElementById('edit-form').classList.remove('hidden');
-      }
-    });
-
-    editSubmit.addEventListener('click', () => {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      const todayLogIndex = userData.dailyLogs.findIndex(log => isSameDay(new Date(log.date), new Date()));
-      if (todayLogIndex !== -1) {
-        const oldLog = userData.dailyLogs[todayLogIndex];
-        const newMemorized = parseInt(document.getElementById('edit-memorized').value) || 0;
-        const newRead = parseInt(document.getElementById('edit-read').value) || 0;
-        const newRevised = parseInt(document.getElementById('edit-revised').value) || 0;
-
-        userData.totalVersesMemorized = userData.totalVersesMemorized - oldLog.memorized + newMemorized;
-        userData.totalVersesRead = userData.totalVersesRead - oldLog.read + newRead;
-        userData.totalVersesRevised = userData.totalVersesRevised - oldLog.revised + newRevised;
-
-        userData.dailyLogs[todayLogIndex] = {
-          date: new Date().toISOString(),
-          memorized: newMemorized,
-          read: newRead,
-          revised: newRevised
-        };
-
-        localStorage.setItem('userData', JSON.stringify(userData));
-        updateUI(userData);
-        document.getElementById('edit-form').classList.add('hidden');
-        document.getElementById('daily-message').classList.remove('hidden');
-      }
-    });
-
-    // Utility functions
-    function isSameDay(date1, date2) {
-      return date1.getFullYear() === date2.getFullYear() &&
-             date1.getMonth() === date2.getMonth() &&
-             date1.getDate() === date2.getDate();
-    }
-
-    function getMemorizationStats(totalVersesMemorized) {
-      let fullyMemorized = 0;
-      let currentSurah = null;
-      let currentProgress = 0;
-      let cumulativeVerses = 0;
-
-      for (const surah of surahs) {
-        cumulativeVerses += surah.verses;
-        if (totalVersesMemorized >= cumulativeVerses) {
-          fullyMemorized++;
-        } else {
-          currentSurah = surah;
-          const versesInSurah = surah.verses;
-          const versesMemorizedInSurah = totalVersesMemorized - (cumulativeVerses - surah.verses);
-          currentProgress = (versesMemorizedInSurah / versesInSurah) * 100;
-          break;
-        }
-      }
-
-      return { fullyMemorized, currentSurah, currentProgress };
-    }
-
-    function updateBadges(userData) {
-      const earnedBadges = badges.filter(badge => userData.totalVersesMemorized >= badge.verses)
-        .map(badge => badge.id);
-      userData.badges = earnedBadges;
-      localStorage.setItem('userData', JSON.stringify(userData));
-
-      const badgesList = document.getElementById('badges-list');
-      badgesList.innerHTML = '';
-      badges.forEach(badge => {
-        const isEarned = userData.badges.includes(badge.id);
-        const badgeDiv = document.createElement('div');
-        badgeDiv.className = `flex flex-col items-center p-2 rounded ${isEarned ? 'bg-green-100 dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-600 opacity-50'}`;
-        badgeDiv.innerHTML = `
-          <i data-feather="${badge.icon}" class="w-6 h-6 mb-1 ${isEarned ? 'text-green-500' : 'text-gray-400'}"></i>
-          <span class="text-sm">${languageToggle.value === 'ar' ? badge.nameAr : badge.name}</span>
-          <span class="text-xs">${badge.verses} verses</span>
-        `;
-        badgesList.appendChild(badgeDiv);
-      });
-      feather.replace();
-    }
-
-    function showMainApp() {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      authSection.classList.add('hidden');
-      mainApp.classList.remove('hidden');
-      updateUI(userData);
-
-      const today = new Date();
-      const lastActive = userData.lastActiveDate ? new Date(userData.lastActiveDate) : null;
-      if (lastActive && isSameDay(lastActive, today)) {
-        document.getElementById('daily-form').classList.add('hidden');
-        document.getElementById('daily-message').classList.remove('hidden');
-      } else {
-        document.getElementById('daily-form').classList.remove('hidden');
-        document.getElementById('daily-message').classList.add('hidden');
-        checkReminder(userData);
-      }
-    }
-
-    function handleDailySubmission() {
-      const memorizedToday = parseInt(document.getElementById('memorized-today').value) || 0;
-      const readToday = parseInt(document.getElementById('read-today').value) || 0;
-      const revisedToday = parseInt(document.getElementById('revised-today').value) || 0;
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      const today = new Date();
-      const lastActive = userData.lastActiveDate ? new Date(userData.lastActiveDate) : null;
-
-      if (lastActive && isSameDay(lastActive, today)) {
-        alert('You have already submitted for today.');
-        return;
-      }
-
-      userData.totalVersesMemorized += memorizedToday;
-      userData.totalVersesRead += readToday;
-      userData.totalVersesRevised += revisedToday;
-
-      if (lastActive) {
-        const nextDay = new Date(lastActive);
-        nextDay.setDate(lastActive.getDate() + 1);
-        if (isSameDay(nextDay, today)) {
-          userData.currentStreak += 1;
-        } else {
-          userData.currentStreak = 1;
-        }
-      } else {
-        userData.currentStreak = 1;
-      }
-
-      if (userData.currentStreak > userData.longestStreak) {
-        userData.longestStreak = userData.currentStreak;
-      }
-
-      userData.lastActiveDate = today.toISOString();
-      userData.dailyLogs.push({
-        date: today.toISOString(),
-        memorized: memorizedToday,
-        read: readToday,
-        revised: revisedToday
-      });
-
-      localStorage.setItem('userData', JSON.stringify(userData));
-      updateUI(userData);
-      document.getElementById('daily-form').classList.add('hidden');
-      document.getElementById('daily-message').classList.remove('hidden');
-    }
-
-    function updateUI(userData) {
-      const lang = languageToggle.value;
-      document.getElementById('user-name').textContent = userData.name;
-      document.getElementById('total-memorized').textContent = userData.totalVersesMemorized;
-      document.getElementById('total-read').textContent = userData.totalVersesRead;
-      document.getElementById('total-revised').textContent = userData.totalVersesRevised;
-      document.getElementById('current-streak').textContent = `${userData.currentStreak} ${lang === 'ar' ? 'أيام' : 'days'}`;
-      document.getElementById('longest-streak').textContent = `${userData.longestStreak} ${lang === 'ar' ? 'أيام' : 'days'}`;
-
-      const stats = getMemorizationStats(userData.totalVersesMemorized);
-      document.getElementById('surahs-memorized').textContent = stats.fullyMemorized;
-      if (stats.currentSurah) {
-        document.getElementById('current-surah').textContent = lang === 'ar' ? stats.currentSurah.nameAr : stats.currentSurah.name;
-        document.getElementById('current-progress').textContent = `${Math.round(stats.currentProgress)}% ${lang === 'ar' ? 'محفوظة' : 'memorized'}`;
-        document.getElementById('progress-bar').style.width = `${Math.round(stats.currentProgress)}%`;
-        const versesToGo = stats.currentSurah.verses - (userData.totalVersesMemorized - (cumulativeVerses - stats.currentSurah.verses));
-        document.getElementById('next-milestone').textContent = `${lang === 'ar' ? 'أكمل' : 'Complete'} ${lang === 'ar' ? stats.currentSurah.nameAr : stats.currentSurah.name} (${versesToGo} ${lang === 'ar' ? 'آيات متبقية' : 'verses to go'})`;
-      } else if (userData.totalVersesMemorized === 0) {
-        document.getElementById('current-surah').textContent = lang === 'ar' ? 'لا شيء' : 'None';
-        document.getElementById('current-progress').textContent = `0% ${lang === 'ar' ? 'محفوظة' : 'memorized'}`;
-        document.getElementById('progress-bar').style.width = '0%';
-        document.getElementById('next-milestone').textContent = `${lang === 'ar' ? 'ابدأ بحفظ الفاتحة (7 آيات)' : 'Start memorizing Al-Fatiha (7 verses)'}`;
-      } else {
-        document.getElementById('current-surah').textContent = lang === 'ar' ? 'مكتمل' : 'Complete';
-        document.getElementById('current-progress').textContent = `100% ${lang === 'ar' ? 'محفوظة' : 'memorized'}`;
-        document.getElementById('progress-bar').style.width = '100%';
-        document.getElementById('next-milestone').textContent = lang === 'ar' ? 'تهانينا! لقد حفظت القرآن كاملاً!' : 'Congratulations! You have memorized the entire Qur\'an!';
-      }
-
-      updateBadges(userData);
-    }
-
-    function updateLanguage(lang) {
-      htmlElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      const t = translations[lang];
-      document.getElementById('auth-title').textContent = t.authTitle;
-      document.getElementById('login-email-label').textContent = t.loginEmail;
-      document.getElementById('login-password-label').textContent = t.loginPassword;
-      loginBtn.textContent = t.loginBtn;
-      document.getElementById('no-account-text').textContent = t.noAccount;
-      showSignup.textContent = t.signupLink;
-      document.getElementById('signup-name-label').textContent = t.signupName;
-      document.getElementById('signup-email-label').textContent = t.signupEmail;
-      document.getElementById('signup-password-label').textContent = t.signupPassword;
-      document.getElementById('signup-memorized-label').textContent = t.signupMemorized;
-      signupBtn.textContent = t.signupBtn;
-      document.getElementById('have-account-text').textContent = t.haveAccount;
-      showLogin.textContent = t.loginLink;
-      document.getElementById('welcome-text').textContent = `${t.welcome}, `;
-      logoutBtn.textContent = t.logout;
-      document.getElementById('daily-progress-title').textContent = t.dailyProgress;
-      document.getElementById('memorized-today-label').textContent = t.memorizedToday;
-      document.getElementById('read-today-label').textContent = t.readToday;
-      document.getElementById('revised-today-label').textContent = t.revisedToday;
-      dailySubmit.textContent = t.submit;
-      document.getElementById('submitted-today-text').textContent = t.submittedToday;
-      editTodayBtn.textContent = t.editToday;
-      document.getElementById('edit-progress-title').textContent = t.editProgress;
-      document.getElementById('edit-memorized-label').textContent = t.editMemorized;
-      document.getElementById('edit-read-label').textContent = t.editRead;
-      document.getElementById('edit-revised-label').textContent = t.editRevised;
-      editSubmit.textContent = t.saveChanges;
-      document.getElementById('total-memorized-title').textContent = t.totalMemorized;
-      document.getElementById('surahs-memorized-title').textContent = t.surahsMemorized;
-      document.getElementById('current-surah-title').textContent = t.currentSurah;
-      document.getElementById('total-read-title').textContent = t.totalRead;
-      document.getElementById('total-revised-title').textContent = t.totalRevised;
-      document.getElementById('current-streak-title').textContent = t.currentStreak;
-      document.getElementById('longest-streak-title').textContent = t.longestStreak;
-      document.getElementById('badges-title').textContent = t.badges;
-      document.getElementById('motivation-title').textContent = t.motivation;
-      document.getElementById('next-milestone-label').textContent = `${t.nextMilestone}: `;
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      if (userData) updateUI(userData);
-    }
-
-    function checkReminder(userData) {
-      if ('Notification' in window && Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted' && !userData.lastActiveDate) {
-            new Notification('Qur\'an Memorize Tracker', {
-              body: 'Don’t forget to log your progress today!'
-            });
-          }
-        });
-      }
-    }
-
-    // Initialize Feather Icons
-    feather.replace();
-  </script>
-</body>
-</html>
+        signup
