@@ -40,642 +40,1115 @@
         </script><!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Memorize Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/feather-icons"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qur'an Memorize Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .arabic {
+            font-family: 'Amiri', serif;
+            font-size: 1.2em;
+        }
+
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #0A5E2A;
+            transition: width 0.3s ease;
+        }
+
+        .heatmap-day {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            margin: 2px;
+        }
+
+        .verse-item:hover {
+            background-color: rgba(10, 94, 42, 0.05);
+        }
+
+        .badge {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+        }
+
+        .dark-mode {
+            background-color: #111827;
+            color: #f3f4f6;
+        }
+
+        .dark-mode .card {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+
+        .dark-mode .verse-item:hover {
+            background-color: rgba(10, 94, 42, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans dark:bg-gray-800 dark:text-gray-200 transition-colors duration-300">
-  <!-- Login/Signup Section -->
-  <div id="auth-section" class="min-h-screen flex items-center justify-center">
-    <div class="bg-white rounded-lg p-8 w-full max-w-md shadow-lg dark:bg-gray-700">
-      <h1 id="auth-title" class="text-2xl font-bold mb-6 text-center">Qur'an Memorize Tracker</h1>
-      <div id="login-form" class="space-y-4">
-        <div>
-          <label for="login-email" id="login-email-label" class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" id="login-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
+<body class="min-h-screen dark-mode:bg-gray-900 dark-mode:text-gray-200 transition-colors duration-300">
+    <!-- Login/Signup Section -->
+    <div id="auth-section" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md shadow-lg dark:bg-gray-700">
+            <h1 id="auth-title" class="text-2xl font-bold mb-6 text-center text-green-800 dark:text-green-300">Qur'an Memorize Tracker</h1>
+            <div id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" id="login-email-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Email">
+                </div>
+                <div>
+                    <label for="login-password" id="login-password-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Password">
+                </div>
+                <button id="login-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Login</button>
+                <p class="text-center text-sm text-gray-600 dark:text-gray-400"><span id="no-account-text">No account?</span> <a href="#" id="show-signup" class="text-green-600 hover:underline">Sign up</a></p>
+            </div>
+            <div id="signup-form" class="space-y-4 hidden">
+                <div>
+                    <label for="signup-name" id="signup-name-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Name</label>
+                    <input type="text" id="signup-name" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Name">
+                </div>
+                <div>
+                    <label for="signup-email" id="signup-email-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email</label>
+                    <input type="email" id="signup-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Email">
+                </div>
+                <div>
+                    <label for="signup-password" id="signup-password-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Password</label>
+                    <input type="password" id="signup-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Password">
+                </div>
+                <div>
+                    <label for="signup-memorized" id="signup-memorized-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total verses memorized so far</label>
+                    <input type="number" id="signup-memorized" min="0" value="0" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Total verses memorized">
+                </div>
+                <button id="signup-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Sign Up</button>
+                <p class="text-center text-sm text-gray-600 dark:text-gray-400"><span id="have-account-text">Have an account?</span> <a href="#" id="show-login" class="text-green-600 hover:underline">Login</a></p>
+            </div>
         </div>
-        <div>
-          <label for="login-password" id="login-password-label" class="block text-sm font-medium mb-1">Password</label>
-          <input type="password" id="login-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <button id="login-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Login</button>
-        <p class="text-center text-sm"><span id="no-account-text">No account?</span> <a href="#" id="show-signup" class="text-green-500 hover:underline">Sign up</a></p>
-      </div>
-      <div id="signup-form" class="space-y-4 hidden">
-        <div>
-          <label for="signup-name" id="signup-name-label" class="block text-sm font-medium mb-1">Name</label>
-          <input type="text" id="signup-name" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <div>
-          <label for="signup-email" id="signup-email-label" class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" id="signup-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <div>
-          <label for="signup-password" id="signup-password-label" class="block text-sm font-medium mb-1">Password</label>
-          <input type="password" id="signup-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <div>
-          <label for="signup-memorized" id="signup-memorized-label" class="block text-sm font-medium mb-1">Total verses memorized so far</label>
-          <input type="number" id="signup-memorized" min="0" value="0" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <button id="signup-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Sign Up</button>
-        <p class="text-center text-sm"><span id="have-account-text">Have an account?</span> <a href="#" id="show-login" class="text-green-500 hover:underline">Login</a></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main App Section -->
-  <div id="main-app" class="min-h-screen p-6 hidden">
-    <header class="flex justify-between items-center mb-8">
-      <h1 id="welcome-text" class="text-2xl font-bold">Welcome, <span id="user-name">User</span></h1>
-      <div class="flex items-center space-x-4">
-        <select id="language-toggle" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
-          <option value="en">English</option>
-          <option value="ar">Arabic</option>
-        </select>
-        <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Toggle theme">
-          <i data-feather="moon" class="w-5 h-5"></i>
-        </button>
-        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded transition focus:ring-2 focus:ring-red-500">Logout</button>
-      </div>
-    </header>
-
-    <!-- Daily Input Section -->
-    <div id="daily-input-section" class="mb-8">
-      <div id="daily-form" class="bg-white rounded-lg p-6 shadow-md dark:bg-gray-700">
-        <h2 id="daily-progress-title" class="text-xl font-bold mb-4">Today's Progress</h2>
-        <div class="space-y-4">
-          <div>
-            <label for="memorized-today" id="memorized-today-label" class="block text-sm font-medium mb-1">Verses memorized today</label>
-            <input type="number" id="memorized-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="read-today" id="read-today-label" class="block text-sm font-medium mb-1">Verses read today</label>
-            <input type="number" id="read-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="revised-today" id="revised-today-label" class="block text-sm font-medium mb-1">Verses revised today</label>
-            <input type="number" id="revised-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <button id="daily-submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Submit</button>
-        </div>
-      </div>
-      <div id="daily-message" class="bg-white rounded-lg p-6 hidden shadow-md dark:bg-gray-700">
-        <p id="submitted-today-text" class="text-center text-green-500 font-medium">You have already submitted for today.</p>
-        <button id="edit-today-btn" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-blue-500">Edit Today's Submission</button>
-      </div>
-      <div id="edit-form" class="bg-white rounded-lg p-6 hidden shadow-md dark:bg-gray-700">
-        <h2 id="edit-progress-title" class="text-xl font-bold mb-4">Edit Today's Progress</h2>
-        <div class="space-y-4">
-          <div>
-            <label for="edit-memorized" id="edit-memorized-label" class="block text-sm font-medium mb-1">Verses memorized today</label>
-            <input type="number" id="edit-memorized" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="edit-read" id="edit-read-label" class="block text-sm font-medium mb-1">Verses read today</label>
-            <input type="number" id="edit-read" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="edit-revised" id="edit-revised-label" class="block text-sm font-medium mb-1">Verses revised today</label>
-            <input type="number" id="edit-revised" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <button id="edit-submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Save Changes</button>
-        </div>
-      </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="book" aria-label="Book icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-memorized-title" class="font-medium">Total Verses Memorized</h3>
+    <!-- Main Content -->
+    <div id="main-app" class="container mx-auto px-4 py-8 hidden">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 id="welcome-text" class="text-2xl md:text-3xl font-bold text-green-800 dark:text-green-300">
+                    <i class="fas fa-book-quran mr-2"></i> Qur'an Memorize Tracker
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300">Track your memorization progress daily</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <select id="language-toggle" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
+                    <option value="en">English</option>
+                    <option value="ar">Arabic</option>
+                </select>
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700" aria-label="Toggle theme">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+                <div class="relative">
+                    <img id="profile-avatar" src="https://ui-avatars.com/api/?name=User&background=0A5E2A&color=fff" 
+                         alt="User profile" class="w-10 h-10 rounded-full cursor-pointer" role="button" aria-label="Open user menu">
+                    <div class="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                </div>
+                <button id="logout-btn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition focus:ring-2 focus:ring-red-500">Logout</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="total-memorized-title" class="text-gray-500 dark:text-gray-400 text-sm">Verses Memorized</p>
+                                <h3 id="total-memorized" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+                                <i class="fas fa-book-quran"></i>
+                            </div>
+                        </div>
+                        <div id="today-memorized" class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-arrow-up mr-1"></i> 0 today
+                        </div>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="current-streak-title" class="text-gray-500 dark:text-gray-400 text-sm">Current Streak</p>
+                                <h3 id="current-streak" class="text-2xl font-bold text-green-700 dark:text-green-300">0 days</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-calendar-check mr-1"></i> Don't break it!
+                        </div>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="surahs-memorized-title" class="text-gray-500 dark:text-gray-400 text-sm">Surahs Completed</p>
+                                <h3 id="surahs-memorized" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <div id="quran-progress" class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-trophy mr-1"></i> 0% of Qur'an
+                        </div>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="total-revised-title" class="text-gray-500 dark:text-gray-400 text-sm">Pages Revised</p>
+                                <h3 id="total-revised" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                        </div>
+                        <div id="today-revised" class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-check-circle mr-1"></i> 0 today
+                        </div>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="total-read-title" class="text-gray-500 dark:text-gray-400 text-sm">Pages Read</p>
+                                <h3 id="total-read" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">
+                                <i class="fas fa-book"></i>
+                            </div>
+                        </div>
+                        <div id="today-read" class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-check-circle mr-1"></i> 0 today
+                        </div>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="level-title" class="text-gray-500 dark:text-gray-400 text-sm">Level</p>
+                                <h3 id="level" class="text-2xl font-bold text-green-700 dark:text-green-300">1</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="points-title" class="text-gray-500 dark:text-gray-400 text-sm">Points</p>
+                                <h3 id="points" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Log Form -->
+                <div id="daily-input-section" class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2 id="daily-progress-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
+                        <i class="fas fa-plus-circle mr-2"></i> Today's Progress
+                    </h2>
+                    <div id="daily-form">
+                        <form id="progressForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="verses" id="memorized-today-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Verses Memorized</label>
+                                    <div class="relative">
+                                        <input type="number" id="verses" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Verses memorized today">
+                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">ayat</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="pages" id="read-today-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Read</label>
+                                    <div class="relative">
+                                        <input type="number" id="pages" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages read today">
+                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="revised" id="revised-today-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Revised</label>
+                                    <div class="relative">
+                                        <input type="number" id="revised" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages revised today">
+                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="surah" id="surah-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Surah</label>
+                                <select id="surah" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Select current surah"></select>
+                            </div>
+                            <div>
+                                <label for="notes" id="notes-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+                                <textarea id="notes" rows="2" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" placeholder="Any reflections or difficulties..." aria-label="Notes"></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" id="open-verse-modal" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200">
+                                    <i class="fas fa-edit mr-2"></i> Mark Verses
+                                </button>
+                                <button type="submit" id="daily-submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
+                                    <i class="fas fa-save mr-2"></i> Save Progress
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="daily-message" class="hidden">
+                        <p id="submitted-today-text" class="text-center text-green-500 font-medium">You have already submitted for today.</p>
+                        <button id="edit-today-btn" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-blue-500">Edit Today's Submission</button>
+                    </div>
+                    <div id="edit-form" class="space-y-4 hidden">
+                        <h2 id="edit-progress-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">Edit Today's Progress</h2>
+                        <form id="editProgressForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="edit-verses" id="edit-memorized-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Verses Memorized</label>
+                                    <div class="relative">
+                                        <input type="number" id="edit-verses" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Verses memorized today">
+                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">ayat</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="edit-pages" id="edit-read-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Read</label>
+                                    <div class="relative">
+                                        <input type="number" id="edit-pages" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages read today">
+                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="edit-revised" id="edit-revised-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Revised</label>
+                                    <div class="relative">
+                                        <input type="number" id="edit-revised" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages revised today">
+                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="edit-surah" id="edit-surah-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Surah</label>
+                                <select id="edit-surah" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Select current surah"></select>
+                            </div>
+                            <div>
+                                <label for="edit-notes" id="edit-notes-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+                                <textarea id="edit-notes" rows="2" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" placeholder="Any reflections or difficulties..." aria-label="Notes"></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" id="edit-submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
+                                    <i class="fas fa-save mr-2"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="recent-activity-title" class="text-xl font-bold text-green-800 dark:text-green-300">
+                            <i class="fas fa-history mr-2"></i> Recent Activity
+                        </h2>
+                        <a href="#" id="view-all-activity" class="text-sm text-green-600 dark:text-green-400 hover:underline">View All</a>
+                    </div>
+                    <div id="activity-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Surah Progress -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2 id="surah-progress-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
+                        <i class="fas fa-tasks mr-2"></i> Surah Progress
+                    </h2>
+                    <div id="surah-progress-list" class="space-y-4"></div>
+                    <div class="text-center mt-4">
+                        <button id="add-surah-btn" class="text-green-600 dark:text-green-400 hover:underline text-sm font-medium">
+                            <i class="fas fa-plus-circle mr-1"></i> Add Another Surah
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Memorization Heatmap -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2 id="heatmap-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
+                        <i class="fas fa-calendar-alt mr-2"></i> Activity Heatmap
+                    </h2>
+                    <div class="flex justify-center mb-2">
+                        <div id="heatmap" class="grid grid-cols-7 gap-1"></div>
+                    </div>
+                    <div id="heatmap-legend" class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Last 30 days of memorization activity
+                    </div>
+                </div>
+
+                <!-- Badges & Achievements -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="badges-title" class="text-xl font-bold text-green-800 dark:text-green-300">
+                            <i class="fas fa-award mr-2"></i> Achievements
+                        </h2>
+                        <span id="badges-unlocked" class="text-sm text-green-600 dark:text-green-400">0/4 unlocked</span>
+                    </div>
+                    <div id="badges-list" class="grid grid-cols-2 gap-3"></div>
+                    <div class="text-center mt-4">
+                        <button id="view-all-badges" class="text-green-600 dark:text-green-400 hover:underline text-sm font-medium">
+                            View All Achievements
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Motivational Quote -->
+                <div class="card bg-gradient-to-r from-green-600 to-green-800 rounded-lg shadow p-6 text-white">
+                    <div class="arabic text-xl mb-3 text-center leading-relaxed">
+                        وَقَالَ رَبُّكُمُ ادْعُونِي أَسْتَجِبْ لَكُمْ
+                    </div>
+                    <p class="text-center italic mb-2">
+                        "And your Lord says, 'Call upon Me; I will respond to you.'"
+                    </p>
+                    <p class="text-center text-sm opacity-80">
+                        - Qur'an 40:60
+                    </p>
+                </div>
+            </div>
         </div>
-        <p id="total-memorized" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="award" aria-label="Award icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="surahs-memorized-title" class="font-medium">Surahs Fully Memorized</h3>
-        </div>
-        <p id="surahs-memorized" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="target" aria-label="Target icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="current-surah-title" class="font-medium">Current Surah</h3>
-        </div>
-        <p id="current-surah" class="text-2xl font-bold mb-2">None</p>
-        <div class="flex items-center text-sm text-gray-600 dark:text-gray-300">
-          <i data-feather="clock" aria-label="Clock icon" class="w-4 h-4 mr-1"></i>
-          <span id="current-progress">0% memorized</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600 mt-2">
-          <div id="progress-bar" class="bg-green-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-        </div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="book-open" aria-label="Book open icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-read-title" class="font-medium">Total Verses Read</h3>
-        </div>
-        <p id="total-read" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="repeat" aria-label="Repeat icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-revised-title" class="font-medium">Total Verses Revised</h3>
-        </div>
-        <p id="total-revised" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="calendar" aria-label="Calendar icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="current-streak-title" class="font-medium">Current Streak</h3>
-        </div>
-        <p id="current-streak" class="text-2xl font-bold mb-2">0 days</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="award" aria-label="Award icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="longest-streak-title" class="font-medium">Longest Streak</h3>
-        </div>
-        <p id="longest-streak" class="text-2xl font-bold mb-2">0 days</p>
-      </div>
+
+        <footer class="text-center text-gray-500 mt-8 dark:text-gray-400">
+            <p>Created by Omar Abdelaziz</p>
+        </footer>
     </div>
 
-    <!-- Badges Section -->
-    <div class="bg-white rounded-lg p-6 mb-8 shadow-md dark:bg-gray-700">
-      <h2 id="badges-title" class="text-xl font-bold mb-4">Badges</h2>
-      <div id="badges-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    <!-- Verse Memorization Modal -->
+    <div id="verseModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="verse-modal-title" class="text-xl font-bold text-green-800 dark:text-green-300">
+                        <i class="fas fa-edit mr-2"></i> Mark Verses
+                    </h3>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" aria-label="Close modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="verse-modal-info" class="mb-4">
+                    <h4 id="verse-modal-surah" class="font-medium text-lg mb-2 text-center arabic"></h4>
+                    <p id="verse-modal-verses" class="text-center text-gray-600 dark:text-gray-400"></p>
+                </div>
+                <div id="verse-list" class="space-y-2 mb-4"></div>
+                <div class="flex justify-between mt-6">
+                    <button id="reset-verses" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i class="fas fa-undo mr-2"></i> Reset
+                    </button>
+                    <button id="save-verses" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Motivation Panel -->
-    <div class="bg-white rounded-lg p-6 shadow-md dark:bg-gray-700">
-      <h2 id="motivation-title" class="text-xl font-bold mb-4">Motivation</h2>
-      <p class="text-lg"><span id="next-milestone-label">Next Milestone:</span> <span id="next-milestone">Start memorizing</span></p>
-    </div>
+    <script>
+        // Surah Data (full 114 surahs)
+        const surahs = [
+            { number: 1, name: "Al-Fatiha", nameAr: "الفاتحة", verses: 7 },
+            { number: 2, name: "Al-Baqarah", nameAr: "البقرة", verses: 286 },
+            { number: 3, name: "Aal-E-Imran", nameAr: "آل عمران", verses: 200 },
+            { number: 4, name: "An-Nisa", nameAr: "النساء", verses: 176 },
+            { number: 5, name: "Al-Ma'ida", nameAr: "المائدة", verses: 120 },
+            { number: 6, name: "Al-An'am", nameAr: "الأنعام", verses: 165 },
+            { number: 7, name: "Al-A'raf", nameAr: "الأعراف", verses: 206 },
+            { number: 8, name: "Al-Anfal", nameAr: "الأنفال", verses: 75 },
+            { number: 9, name: "At-Tawbah", nameAr: "التوبة", verses: 129 },
+            { number: 10, name: "Yunus", nameAr: "يونس", verses: 109 },
+            { number: 11, name: "Hud", nameAr: "هود", verses: 123 },
+            { number: 12, name: "Yusuf", nameAr: "يوسف", verses: 111 },
+            { number: 13, name: "Ar-Ra'd", nameAr: "الرعد", verses: 43 },
+            { number: 14, name: "Ibrahim", nameAr: "إبراهيم", verses: 52 },
+            { number: 15, name: "Al-Hijr", nameAr: "الحجر", verses: 99 },
+            { number: 16, name: "An-Nahl", nameAr: "النحل", verses: 128 },
+            { number: 17, name: "Al-Isra", nameAr: "الإسراء", verses: 111 },
+            { number: 18, name: "Al-Kahf", nameAr: "الكهف", verses: 110 },
+            { number: 19, name: "Maryam", nameAr: "مريم", verses: 98 },
+            { number: 20, name: "Ta-Ha", nameAr: "طه", verses: 135 },
+            { number: 21, name: "Al-Anbiya", nameAr: "الأنبياء", verses: 112 },
+            { number: 22, name: "Al-Hajj", nameAr: "الحج", verses: 78 },
+            { number: 23, name: "Al-Mu'minun", nameAr: "المؤمنون", verses: 118 },
+            { number: 24, name: "An-Nur", nameAr: "النور", verses: 64 },
+            { number: 25, name: "Al-Furqan", nameAr: "الفرقان", verses: 77 },
+            { number: 26, name: "Ash-Shu'ara", nameAr: "الشعراء", verses: 227 },
+            { number: 27, name: "An-Naml", nameAr: "النمل", verses: 93 },
+            { number: 28, name: "Al-Qasas", nameAr: "القصص", verses: 88 },
+            { number: 29, name: "Al-Ankabut", nameAr: "العنكبوت", verses: 69 },
+            { number: 30, name: "Ar-Rum", nameAr: "الروم", verses: 60 },
+            { number: 31, name: "Luqman", nameAr: "لقمان", verses: 34 },
+            { number: 32, name: "As-Sajda", nameAr: "السجدة", verses: 30 },
+            { number: 33, name: "Al-Ahzab", nameAr: "الأحزاب", verses: 73 },
+            { number: 34, name: "Saba", nameAr: "سبأ", verses: 54 },
+            { number: 35, name: "Fatir", nameAr: "فاطر", verses: 45 },
+            { number: 36, name: "Ya-Sin", nameAr: "يس", verses: 83 },
+            { number: 37, name: "As-Saffat", nameAr: "الصافات", verses: 182 },
+            { number: 38, name: "Sad", nameAr: "ص", verses: 88 },
+            { number: 39, name: "Az-Zumar", nameAr: "الزمر", verses: 75 },
+            { number: 40, name: "Ghafir", nameAr: "غافر", verses: 85 },
+            { number: 41, name: "Fussilat", nameAr: "فصلت", verses: 54 },
+            { number: 42, name: "Ash-Shura", nameAr: "الشورى", verses: 53 },
+            { number: 43, name: "Az-Zukhruf", nameAr: "الزخرف", verses: 89 },
+            { number: 44, name: "Ad-Dukhan", nameAr: "الدخان", verses: 59 },
+            { number: 45, name: "Al-Jathiya", nameAr: "الجاثية", verses: 37 },
+            { number: 46, name: "Al-Ahqaf", nameAr: "الأحقاف", verses: 35 },
+            { number: 47, name: "Muhammad", nameAr: "محمد", verses: 38 },
+            { number: 48, name: "Al-Fath", nameAr: "الفتح", verses: 29 },
+            { number: 49, name: "Al-Hujurat", nameAr: "الحجرات", verses: 18 },
+            { number: 50, name: "Qaf", nameAr: "ق", verses: 45 },
+            { number: 51, name: "Adh-Dhariyat", nameAr: "الذاريات", verses: 60 },
+            { number: 52, name: "At-Tur", nameAr: "الطور", verses: 49 },
+            { number: 53, name: "An-Najm", nameAr: "النجم", verses: 62 },
+            { number: 54, name: "Al-Qamar", nameAr: "القمر", verses: 55 },
+            { number: 55, name: "Ar-Rahman", nameAr: "الرحمن", verses: 78 },
+            { number: 56, name: "Al-Waqi'a", nameAr: "الواقعة", verses: 96 },
+            { number: 57, name: "Al-Hadid", nameAr: "الحديد", verses: 29 },
+            { number: 58, name: "Al-Mujadila", nameAr: "المجادلة", verses: 22 },
+            { number: 59, name: "Al-Hashr", nameAr: "الحشر", verses: 24 },
+            { number: 60, name: "Al-Mumtahina", nameAr: "الممتحنة", verses: 13 },
+            { number: 61, name: "As-Saff", nameAr: "الصف", verses: 14 },
+            { number: 62, name: "Al-Jumu'a", nameAr: "الجمعة", verses: 11 },
+            { number: 63, name: "Al-Munafiqun", nameAr: "المنافقون", verses: 11 },
+            { number: 64, name: "At-Taghabun", nameAr: "التغابن", verses: 18 },
+            { number: 65, name: "At-Talaq", nameAr: "الطلاق", verses: 12 },
+            { number: 66, name: "At-Tahrim", nameAr: "التحريم", verses: 12 },
+            { number: 67, name: "Al-Mulk", nameAr: "الملك", verses: 30 },
+            { number: 68, name: "Al-Qalam", nameAr: "القلم", verses: 52 },
+            { number: 69, name: "Al-Haqqa", nameAr: "الحاقة", verses: 52 },
+            { number: 70, name: "Al-Ma'arij", nameAr: "المعارج", verses: 44 },
+            { number: 71, name: "Nuh", nameAr: "نوح", verses: 28 },
+            { number: 72, name: "Al-Jinn", nameAr: "الجن", verses: 28 },
+            { number: 73, name: "Al-Muzzammil", nameAr: "المزمل", verses: 20 },
+            { number: 74, name: "Al-Muddathir", nameAr: "المدثر", verses: 56 },
+            { number: 75, name: "Al-Qiyama", nameAr: "القيامة", verses: 40 },
+            { number: 76, name: "Al-Insan", nameAr: "الإنسان", verses: 31 },
+            { number: 77, name: "Al-Mursalat", nameAr: "المرسلات", verses: 50 },
+            { number: 78, name: "An-Naba", nameAr: "النبأ", verses: 40 },
+            { number: 79, name: "An-Nazi'at", nameAr: "النازعات", verses: 46 },
+            { number: 80, name: "Abasa", nameAr: "عبس", verses: 42 },
+            { number: 81, name: "At-Takwir", nameAr: "التكوير", verses: 29 },
+            { number: 82, name: "Al-Infitar", nameAr: "الانفطار", verses: 19 },
+            { number: 83, name: "Al-Mutaffifin", nameAr: "المطففين", verses: 36 },
+            { number: 84, name: "Al-Inshiqaq", nameAr: "الانشقاق", verses: 25 },
+            { number: 85, name: "Al-Buruj", nameAr: "البروج", verses: 22 },
+            { number: 86, name: "At-Tariq", nameAr: "الطارق", verses: 17 },
+            { number: 87, name: "Al-A'la", nameAr: "الأعلى", verses: 19 },
+            { number: 88, name: "Al-Ghashiya", nameAr: "الغاشية", verses: 26 },
+            { number: 89, name: "Al-Fajr", nameAr: "الفجر", verses: 30 },
+            { number: 90, name: "Al-Balad", nameAr: "البلد", verses: 20 },
+            { number: 91, name: "Ash-Shams", nameAr: "الشمس", verses: 15 },
+            { number: 92, name: "Al-Layl", nameAr: "الليل", verses: 21 },
+            { number: 93, name: "Ad-Duha", nameAr: "الضحى", verses: 11 },
+            { number: 94, name: "Ash-Sharh", nameAr: "الشرح", verses: 8 },
+            { number: 95, name: "At-Tin", nameAr: "التين", verses: 8 },
+            { number: 96, name: "Al-Alaq", nameAr: "العلق", verses: 19 },
+            { number: 97, name: "Al-Qadr", nameAr: "القدر", verses: 5 },
+            { number: 98, name: "Al-Bayyina", nameAr: "البينة", verses: 8 },
+            { number: 99, name: "Az-Zalzala", nameAr: "الزلزلة", verses: 8 },
+            { number: 100, name: "Al-Adiyat", nameAr: "العاديات", verses: 11 },
+            { number: 101, name: "Al-Qari'a", nameAr: "القارعة", verses: 11 },
+            { number: 102, name: "At-Takathur", nameAr: "التكاثر", verses: 8 },
+            { number: 103, name: "Al-Asr", nameAr: "العصر", verses: 3 },
+            { number: 104, name: "Al-Humaza", nameAr: "الهمزة", verses: 9 },
+            { number: 105, name: "Al-Fil", nameAr: "الفيل", verses: 5 },
+            { number: 106, name: "Quraysh", nameAr: "قريش", verses: 4 },
+            { number: 107, name: "Al-Ma'un", nameAr: "الماعون", verses: 7 },
+            { number: 108, name: "Al-Kawthar", nameAr: "الكوثر", verses: 3 },
+            { number: 109, name: "Al-Kafirun", nameAr: "الكافرون", verses: 6 },
+            { number: 110, name: "An-Nasr", nameAr: "النصر", verses: 3 },
+            { number: 111, name: "Al-Masad", nameAr: "المسد", verses: 5 },
+            { number: 112, name: "Al-Ikhlas", nameAr: "الإخلاص", verses: 4 },
+            { number: 113, name: "Al-Falaq", nameAr: "الفلق", verses: 5 },
+            { number: 114, name: "An-Nas", nameAr: "الناس", verses: 6 }
+        ];
 
-    <footer class="text-center text-gray-500 mt-8 dark:text-gray-400">
-      <p>Created by Omar Abdelaziz</p>
-    </footer>
-  </div>
+        // Badge Definitions
+        const badges = [
+            { id: 1, name: "Beginner", nameAr: "مبتدئ", verses: 10, icon: "star" },
+            { id: 2, name: "Learner", nameAr: "متعلم", verses: 50, icon: "book" },
+            { id: 3, name: "Achiever", nameAr: "منجز", verses: 100, icon: "award" },
+            { id: 4, name: "Master", nameAr: "متقن", verses: 500, icon: "trophy" }
+        ];
 
-  <script>
-    // Surah Data (subset; add all 114 surahs for full implementation)
-    const surahs = [
-      { number: 1, name: "Al-Fatiha", nameAr: "الفاتحة", verses: 7 },
-      { number: 2, name: "Al-Baqarah", nameAr: "البقرة", verses: 286 },
-      { number: 3, name: "Aal-E-Imran", nameAr: "آل عمران", verses: 200 },
-      { number: 4, name: "An-Nisa", nameAr: "النساء", verses: 176 }
-    ];
-
-    // Language Translations
-    const translations = {
-      en: {
-        authTitle: "Qur'an Memorize Tracker",
-        loginEmail: "Email",
-        loginPassword: "Password",
-        loginBtn: "Login",
-        noAccount: "No account?",
-        signupLink: "Sign up",
-        signupName: "Name",
-        signupEmail: "Email",
-        signupPassword: "Password",
-        signupMemorized: "Total verses memorized so far",
-        signupBtn: "Sign Up",
-        haveAccount: "Have an account?",
-        loginLink: "Login",
-        welcome: "Welcome",
-        logout: "Logout",
-        dailyProgress: "Today's Progress",
-        memorizedToday: "Verses memorized today",
-        readToday: "Verses read today",
-        revisedToday: "Verses revised today",
-        submit: "Submit",
-        submittedToday: "You have already submitted for today.",
-        editToday: "Edit Today's Submission",
-        editProgress: "Edit Today's Progress",
-        editMemorized: "Verses memorized today",
-        editRead: "Verses read today",
-        editRevised: "Verses revised today",
-        saveChanges: "Save Changes",
-        totalMemorized: "Total Verses Memorized",
-        surahsMemorized: "Surahs Fully Memorized",
-        currentSurah: "Current Surah",
-        totalRead: "Total Verses Read",
-        totalRevised: "Total Verses Revised",
-        currentStreak: "Current Streak",
-        longestStreak: "Longest Streak",
-        badges: "Badges",
-        motivation: "Motivation",
-        nextMilestone: "Next Milestone",
-        startMemorizing: "Start memorizing"
-      },
-      ar: {
-        authTitle: "متتبع حفظ القرآن",
-        loginEmail: "البريد الإلكتروني",
-        loginPassword: "كلمة المرور",
-        loginBtn: "تسجيل الدخول",
-        noAccount: "ليس لديك حساب؟",
-        signupLink: "سجل",
-        signupName: "الاسم",
-        signupEmail: "البريد الإلكتروني",
-        signupPassword: "كلمة المرور",
-        signupMemorized: "إجمالي الآيات المحفوظة حتى الآن",
-        signupBtn: "التسجيل",
-        haveAccount: "لديك حساب؟",
-        loginLink: "تسجيل الدخول",
-        welcome: "مرحبًا",
-        logout: "تسجيل الخروج",
-        dailyProgress: "تقدم اليوم",
-        memorizedToday: "الآيات المحفوظة اليوم",
-        readToday: "الآيات المقروءة اليوم",
-        revisedToday: "الآيات المراجعة اليوم",
-        submit: "إرسال",
-        submittedToday: "لقد قدمت بالفعل اليوم.",
-        editToday: "تعديل تقديم اليوم",
-        editProgress: "تعديل تقدم اليوم",
-        editMemorized: "الآيات المحفوظة اليوم",
-        editRead: "الآيات المقروءة اليوم",
-        editRevised: "الآيات المراجعة اليوم",
-        saveChanges: "حفظ التغييرات",
-        totalMemorized: "إجمالي الآيات المحفوظة",
-        surahsMemorized: "السور المحفوظة بالكامل",
-        currentSurah: "السورة الحالية",
-        totalRead: "إجمالي الآيات المقروءة",
-        totalRevised: "إجمالي الآيات المراجعة",
-        currentStreak: "السلسلة الحالية",
-        longestStreak: "أطول سلسلة",
-        badges: "الشارات",
-        motivation: "التحفيز",
-        nextMilestone: "المعلم التالي",
-        startMemorizing: "ابدأ الحفظ"
-      }
-    };
-
-    // Badge Definitions
-    const badges = [
-      { id: 1, name: "Beginner", nameAr: "مبتدئ", verses: 10, icon: "star" },
-      { id: 2, name: "Learner", nameAr: "متعلم", verses: 50, icon: "book" },
-      { id: 3, name: "Achiever", nameAr: "منجز", verses: 100, icon: "award" },
-      { id: 4, name: "Master", nameAr: "متقن", verses: 500, icon: "trophy" }
-    ];
-
-    // DOM Elements
-    const authSection = document.getElementById('auth-section');
-    const mainApp = document.getElementById('main-app');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const showSignup = document.getElementById('show-signup');
-    const showLogin = document.getElementById('show-login');
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const dailySubmit = document.getElementById('daily-submit');
-    const editTodayBtn = document.getElementById('edit-today-btn');
-    const editSubmit = document.getElementById('edit-submit');
-    const themeToggle = document.getElementById('theme-toggle');
-    const languageToggle = document.getElementById('language-toggle');
-    const htmlElement = document.documentElement;
-
-    // Check login status and theme on load
-    if (localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userData')) {
-      showMainApp();
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-      htmlElement.classList.add('dark');
-      themeToggle.querySelector('i').setAttribute('data-feather', 'sun');
-    }
-    const lang = localStorage.getItem('language') || 'en';
-    languageToggle.value = lang;
-    updateLanguage(lang);
-
-    // Theme toggle
-    themeToggle.addEventListener('click', () => {
-      htmlElement.classList.toggle('dark');
-      localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
-      themeToggle.querySelector('i').setAttribute('data-feather', htmlElement.classList.contains('dark') ? 'sun' : 'moon');
-      feather.replace();
-    });
-
-    // Language toggle
-    languageToggle.addEventListener('change', (e) => {
-      const lang = e.target.value;
-      localStorage.setItem('language', lang);
-      updateLanguage(lang);
-    });
-
-    // Toggle between login and signup forms
-    showSignup.addEventListener('click', (e) => {
-      e.preventDefault();
-      loginForm.classList.add('hidden');
-      signupForm.classList.remove('hidden');
-    });
-
-    showLogin.addEventListener('click', (e) => {
-      e.preventDefault();
-      signupForm.classList.add('hidden');
-      loginForm.classList.remove('hidden');
-    });
-
-    // Login handler
-    loginBtn.addEventListener('click', () => {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      if (userData && userData.email === email && userData.password === password) {
-        localStorage.setItem('isLoggedIn', 'true');
-        showMainApp();
-      } else {
-        alert('Invalid credentials');
-      }
-    });
-
-    // Signup handler
-    signupBtn.addEventListener('click', () => {
-      const name = document.getElementById('signup-name').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      const totalVersesMemorized = parseInt(document.getElementById('signup-memorized').value) || 0;
-      const userData = {
-        name,
-        email,
-        password,
-        totalVersesMemorized,
-        totalVersesRead: 0,
-        totalVersesRevised: 0,
-        currentStreak: 0,
-        longestStreak: 0,
-        lastActiveDate: null,
-        dailyLogs: [],
-        badges: []
-      };
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('isLoggedIn', 'true');
-      showMainApp();
-    });
-
-    // Logout handler
-    logoutBtn.addEventListener('click', () => {
-      localStorage.setItem('isLoggedIn', 'false');
-      mainApp.classList.add('hidden');
-      authSection.classList.remove('hidden');
-    });
-
-    // Daily submission handler
-    dailySubmit.addEventListener('click', () => {
-      handleDailySubmission();
-    });
-
-    // Edit today's submission
-    editTodayBtn.addEventListener('click', () => {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), new Date()));
-      if (todayLog) {
-        document.getElementById('edit-memorized').value = todayLog.memorized;
-        document.getElementById('edit-read').value = todayLog.read;
-        document.getElementById('edit-revised').value = todayLog.revised;
-        document.getElementById('daily-message').classList.add('hidden');
-        document.getElementById('edit-form').classList.remove('hidden');
-      }
-    });
-
-    editSubmit.addEventListener('click', () => {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      const todayLogIndex = userData.dailyLogs.findIndex(log => isSameDay(new Date(log.date), new Date()));
-      if (todayLogIndex !== -1) {
-        const oldLog = userData.dailyLogs[todayLogIndex];
-        const newMemorized = parseInt(document.getElementById('edit-memorized').value) || 0;
-        const newRead = parseInt(document.getElementById('edit-read').value) || 0;
-        const newRevised = parseInt(document.getElementById('edit-revised').value) || 0;
-
-        userData.totalVersesMemorized = userData.totalVersesMemorized - oldLog.memorized + newMemorized;
-        userData.totalVersesRead = userData.totalVersesRead - oldLog.read + newRead;
-        userData.totalVersesRevised = userData.totalVersesRevised - oldLog.revised + newRevised;
-
-        userData.dailyLogs[todayLogIndex] = {
-          date: new Date().toISOString(),
-          memorized: newMemorized,
-          read: newRead,
-          revised: newRevised
+        // Language Translations
+        const translations = {
+            en: {
+                authTitle: "Qur'an Memorize Tracker",
+                loginEmail: "Email",
+                loginPassword: "Password",
+                loginBtn: "Login",
+                noAccount: "No account?",
+                signupLink: "Sign up",
+                signupName: "Name",
+                signupEmail: "Email",
+                signupPassword: "Password",
+                signupMemorized: "Total verses memorized so far",
+                signupBtn: "Sign Up",
+                haveAccount: "Have an account?",
+                loginLink: "Login",
+                welcome: "Welcome",
+                trackProgress: "Track your memorization progress daily",
+                logout: "Logout",
+                dailyProgress: "Today's Progress",
+                memorizedToday: "Verses Memorized",
+                readToday: "Pages Read",
+                revisedToday: "Pages Revised",
+                surah: "Current Surah",
+                notes: "Notes",
+                submit: "Save Progress",
+                markVerses: "Mark Verses",
+                submittedToday: "You have already submitted for today.",
+                editToday: "Edit Today's Submission",
+                editProgress: "Edit Today's Progress",
+                editMemorized: "Verses Memorized",
+                editRead: "Pages Read",
+                editRevised: "Pages Revised",
+                editSurah: "Current Surah",
+                editNotes: "Notes",
+                saveChanges: "Save Changes",
+                totalMemorized: "Verses Memorized",
+                surahsMemorized: "Surahs Completed",
+                currentSurah: "Current Surah",
+                totalRead: "Pages Read",
+                totalRevised: "Pages Revised",
+                currentStreak: "Current Streak",
+                longestStreak: "Longest Streak",
+                level: "Level",
+                points: "Points",
+                todayMemorized: "today",
+                quranProgress: "of Qur'an",
+                dontBreak: "Don't break it!",
+                todayRevised: "today",
+                todayRead: "today",
+                recentActivity: "Recent Activity",
+                viewAll: "View All",
+                surahProgress: "Surah Progress",
+                addSurah: "Add Another Surah",
+                heatmap: "Activity Heatmap",
+                heatmapLegend: "Last 30 days of memorization activity",
+                badges: "Achievements",
+                badgesUnlocked: "unlocked",
+                viewAllBadges: "View All Achievements",
+                motivation: "Motivation",
+                nextMilestone: "Next Milestone",
+                startMemorizing: "Start memorizing",
+                verseModalTitle: "Mark Verses",
+                verseModalSurah: "Surah",
+                verseModalVerses: "verses",
+                resetVerses: "Reset",
+                saveVerses: "Save Changes"
+            },
+            ar: {
+                authTitle: "متتبع حفظ القرآن",
+                loginEmail: "البريد الإلكتروني",
+                loginPassword: "كلمة المرور",
+                loginBtn: "تسجيل الدخول",
+                noAccount: "ليس لديك حساب؟",
+                signupLink: "سجل",
+                signupName: "الاسم",
+                signupEmail: "البريد الإلكتروني",
+                signupPassword: "كلمة المرور",
+                signupMemorized: "إجمالي الآيات المحفوظة حتى الآن",
+                signupBtn: "التسجيل",
+                haveAccount: "لديك حساب؟",
+                loginLink: "تسجيل الدخول",
+                welcome: "مرحبًا",
+                trackProgress: "تتبع تقدم حفظك اليومي",
+                logout: "تسجيل الخروج",
+                dailyProgress: "تقدم اليوم",
+                memorizedToday: "الآيات المحفوظة",
+                readToday: "الصفحات المقروءة",
+                revisedToday: "الصفحات المراجعة",
+                surah: "السورة الحالية",
+                notes: "ملاحظات",
+                submit: "حفظ التقدم",
+                markVerses: "وضع علامة على الآيات",
+                submittedToday: "لقد قدمت بالفعل اليوم.",
+                editToday: "تعديل تقديم اليوم",
+                editProgress: "تعديل تقدم اليوم",
+                editMemorized: "الآيات المحفوظة",
+                editRead: "الصفحات المقروءة",
+                editRevised: "الصفحات المراجعة",
+                editSurah: "السورة الحالية",
+                editNotes: "ملاحظات",
+                saveChanges: "حفظ التغييرات",
+                totalMemorized: "إجمالي الآيات المحفوظة",
+                surahsMemorized: "السور المكتملة",
+                currentSurah: "السورة الحالية",
+                totalRead: "إجمالي الصفحات المقروءة",
+                totalRevised: "إجمالي الصفحات المراجعة",
+                currentStreak: "السلسلة الحالية",
+                longestStreak: "أطول سلسلة",
+                level: "المستوى",
+                points: "النقاط",
+                todayMemorized: "اليوم",
+                quranProgress: "من القرآن",
+                dontBreak: "لا تكسرها!",
+                todayRevised: "اليوم",
+                todayRead: "اليوم",
+                recentActivity: "النشاط الأخير",
+                viewAll: "عرض الكل",
+                surahProgress: "تقدم السور",
+                addSurah: "إضافة سورة أخرى",
+                heatmap: "خريطة النشاط",
+                heatmapLegend: "آخر 30 يومًا من نشاط الحفظ",
+                badges: "الإنجازات",
+                badgesUnlocked: "مفتوح",
+                viewAllBadges: "عرض كل الإنجازات",
+                motivation: "التحفيز",
+                nextMilestone: "المعلم التالي",
+                startMemorizing: "ابدأ الحفظ",
+                verseModalTitle: "وضع علامة على الآيات",
+                verseModalSurah: "سورة",
+                verseModalVerses: "آيات",
+                resetVerses: "إعادة تعيين",
+                saveVerses: "حفظ التغييرات"
+            }
         };
 
-        localStorage.setItem('userData', JSON.stringify(userData));
-        updateUI(userData);
-        document.getElementById('edit-form').classList.add('hidden');
-        document.getElementById('daily-message').classList.remove('hidden');
-      }
-    });
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const mainApp = document.getElementById('main-app');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const showSignup = document.getElementById('show-signup');
+        const showLogin = document.getElementById('show-login');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const progressForm = document.getElementById('progressForm');
+        const dailySubmit = document.getElementById('daily-submit');
+        const editTodayBtn = document.getElementById('edit-today-btn');
+        const editSubmit = document.getElementById('edit-submit');
+        const themeToggle = document.getElementById('theme-toggle');
+        const languageToggle = document.getElementById('language-toggle');
+        const profileAvatar = document.getElementById('profile-avatar');
+        const verseModal = document.getElementById('verseModal');
+        const closeModal = document.getElementById('closeModal');
+        const resetVerses = document.getElementById('reset-verses');
+        const saveVerses = document.getElementById('save-verses');
+        const openVerseModal = document.getElementById('open-verse-modal');
+        const addSurahBtn = document.getElementById('add-surah-btn');
+        const htmlElement = document.documentElement;
 
-    // Utility functions
-    function isSameDay(date1, date2) {
-      return date1.getFullYear() === date2.getFullYear() &&
-             date1.getMonth() === date2.getMonth() &&
-             date1.getDate() === date2.getDate();
-    }
+        // Initialize user data
+        let userData = JSON.parse(localStorage.getItem('userData')) || {
+            name: '',
+            email: '',
+            password: '',
+            totalVersesMemorized: 0,
+            totalPagesRead: 0,
+            totalPagesRevised: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            lastActiveDate: null,
+            dailyLogs: [],
+            points: 0,
+            level: 1,
+            badges: [],
+            verses: {} // Stores memorized verses per surah
+        };
 
-    function getMemorizationStats(totalVersesMemorized) {
-      let fullyMemorized = 0;
-      let currentSurah = null;
-      let currentProgress = 0;
-      let cumulativeVerses = 0;
-
-      for (const surah of surahs) {
-        cumulativeVerses += surah.verses;
-        if (totalVersesMemorized >= cumulativeVerses) {
-          fullyMemorized++;
-        } else {
-          currentSurah = surah;
-          const versesInSurah = surah.verses;
-          const versesMemorizedInSurah = totalVersesMemorized - (cumulativeVerses - surah.verses);
-          currentProgress = (versesMemorizedInSurah / versesInSurah) * 100;
-          break;
+        // Check login status, theme, and language on load
+        if (localStorage.getItem('isLoggedIn') === 'true' && userData.email) {
+            showMainApp();
         }
-      }
-
-      return { fullyMemorized, currentSurah, currentProgress };
-    }
-
-    function updateBadges(userData) {
-      const earnedBadges = badges.filter(badge => userData.totalVersesMemorized >= badge.verses)
-        .map(badge => badge.id);
-      userData.badges = earnedBadges;
-      localStorage.setItem('userData', JSON.stringify(userData));
-
-      const badgesList = document.getElementById('badges-list');
-      badgesList.innerHTML = '';
-      badges.forEach(badge => {
-        const isEarned = userData.badges.includes(badge.id);
-        const badgeDiv = document.createElement('div');
-        badgeDiv.className = `flex flex-col items-center p-2 rounded ${isEarned ? 'bg-green-100 dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-600 opacity-50'}`;
-        badgeDiv.innerHTML = `
-          <i data-feather="${badge.icon}" class="w-6 h-6 mb-1 ${isEarned ? 'text-green-500' : 'text-gray-400'}"></i>
-          <span class="text-sm">${languageToggle.value === 'ar' ? badge.nameAr : badge.name}</span>
-          <span class="text-xs">${badge.verses} verses</span>
-        `;
-        badgesList.appendChild(badgeDiv);
-      });
-      feather.replace();
-    }
-
-    function showMainApp() {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      authSection.classList.add('hidden');
-      mainApp.classList.remove('hidden');
-      updateUI(userData);
-
-      const today = new Date();
-      const lastActive = userData.lastActiveDate ? new Date(userData.lastActiveDate) : null;
-      if (lastActive && isSameDay(lastActive, today)) {
-        document.getElementById('daily-form').classList.add('hidden');
-        document.getElementById('daily-message').classList.remove('hidden');
-      } else {
-        document.getElementById('daily-form').classList.remove('hidden');
-        document.getElementById('daily-message').classList.add('hidden');
-        checkReminder(userData);
-      }
-    }
-
-    function handleDailySubmission() {
-      const memorizedToday = parseInt(document.getElementById('memorized-today').value) || 0;
-      const readToday = parseInt(document.getElementById('read-today').value) || 0;
-      const revisedToday = parseInt(document.getElementById('revised-today').value) || 0;
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      const today = new Date();
-      const lastActive = userData.lastActiveDate ? new Date(userData.lastActiveDate) : null;
-
-      if (lastActive && isSameDay(lastActive, today)) {
-        alert('You have already submitted for today.');
-        return;
-      }
-
-      userData.totalVersesMemorized += memorizedToday;
-      userData.totalVersesRead += readToday;
-      userData.totalVersesRevised += revisedToday;
-
-      if (lastActive) {
-        const nextDay = new Date(lastActive);
-        nextDay.setDate(lastActive.getDate() + 1);
-        if (isSameDay(nextDay, today)) {
-          userData.currentStreak += 1;
-        } else {
-          userData.currentStreak = 1;
+        if (localStorage.getItem('darkMode') === 'true' || 
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark-mode');
+            themeToggle.querySelector('.fa-moon').classList.add('hidden');
+            themeToggle.querySelector('.fa-sun').classList.remove('hidden');
         }
-      } else {
-        userData.currentStreak = 1;
-      }
+        const lang = localStorage.getItem('language') || 'en';
+        languageToggle.value = lang;
+        updateLanguage(lang);
+        populateSurahSelect();
 
-      if (userData.currentStreak > userData.longestStreak) {
-        userData.longestStreak = userData.currentStreak;
-      }
-
-      userData.lastActiveDate = today.toISOString();
-      userData.dailyLogs.push({
-        date: today.toISOString(),
-        memorized: memorizedToday,
-        read: readToday,
-        revised: revisedToday
-      });
-
-      localStorage.setItem('userData', JSON.stringify(userData));
-      updateUI(userData);
-      document.getElementById('daily-form').classList.add('hidden');
-      document.getElementById('daily-message').classList.remove('hidden');
-    }
-
-    function updateUI(userData) {
-      const lang = languageToggle.value;
-      document.getElementById('user-name').textContent = userData.name;
-      document.getElementById('total-memorized').textContent = userData.totalVersesMemorized;
-      document.getElementById('total-read').textContent = userData.totalVersesRead;
-      document.getElementById('total-revised').textContent = userData.totalVersesRevised;
-      document.getElementById('current-streak').textContent = `${userData.currentStreak} ${lang === 'ar' ? 'أيام' : 'days'}`;
-      document.getElementById('longest-streak').textContent = `${userData.longestStreak} ${lang === 'ar' ? 'أيام' : 'days'}`;
-
-      const stats = getMemorizationStats(userData.totalVersesMemorized);
-      document.getElementById('surahs-memorized').textContent = stats.fullyMemorized;
-      if (stats.currentSurah) {
-        document.getElementById('current-surah').textContent = lang === 'ar' ? stats.currentSurah.nameAr : stats.currentSurah.name;
-        document.getElementById('current-progress').textContent = `${Math.round(stats.currentProgress)}% ${lang === 'ar' ? 'محفوظة' : 'memorized'}`;
-        document.getElementById('progress-bar').style.width = `${Math.round(stats.currentProgress)}%`;
-        const versesToGo = stats.currentSurah.verses - (userData.totalVersesMemorized - (cumulativeVerses - stats.currentSurah.verses));
-        document.getElementById('next-milestone').textContent = `${lang === 'ar' ? 'أكمل' : 'Complete'} ${lang === 'ar' ? stats.currentSurah.nameAr : stats.currentSurah.name} (${versesToGo} ${lang === 'ar' ? 'آيات متبقية' : 'verses to go'})`;
-      } else if (userData.totalVersesMemorized === 0) {
-        document.getElementById('current-surah').textContent = lang === 'ar' ? 'لا شيء' : 'None';
-        document.getElementById('current-progress').textContent = `0% ${lang === 'ar' ? 'محفوظة' : 'memorized'}`;
-        document.getElementById('progress-bar').style.width = '0%';
-        document.getElementById('next-milestone').textContent = `${lang === 'ar' ? 'ابدأ بحفظ الفاتحة (7 آيات)' : 'Start memorizing Al-Fatiha (7 verses)'}`;
-      } else {
-        document.getElementById('current-surah').textContent = lang === 'ar' ? 'مكتمل' : 'Complete';
-        document.getElementById('current-progress').textContent = `100% ${lang === 'ar' ? 'محفوظة' : 'memorized'}`;
-        document.getElementById('progress-bar').style.width = '100%';
-        document.getElementById('next-milestone').textContent = lang === 'ar' ? 'تهانينا! لقد حفظت القرآن كاملاً!' : 'Congratulations! You have memorized the entire Qur\'an!';
-      }
-
-      updateBadges(userData);
-    }
-
-    function updateLanguage(lang) {
-      htmlElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      const t = translations[lang];
-      document.getElementById('auth-title').textContent = t.authTitle;
-      document.getElementById('login-email-label').textContent = t.loginEmail;
-      document.getElementById('login-password-label').textContent = t.loginPassword;
-      loginBtn.textContent = t.loginBtn;
-      document.getElementById('no-account-text').textContent = t.noAccount;
-      showSignup.textContent = t.signupLink;
-      document.getElementById('signup-name-label').textContent = t.signupName;
-      document.getElementById('signup-email-label').textContent = t.signupEmail;
-      document.getElementById('signup-password-label').textContent = t.signupPassword;
-      document.getElementById('signup-memorized-label').textContent = t.signupMemorized;
-      signupBtn.textContent = t.signupBtn;
-      document.getElementById('have-account-text').textContent = t.haveAccount;
-      showLogin.textContent = t.loginLink;
-      document.getElementById('welcome-text').textContent = `${t.welcome}, `;
-      logoutBtn.textContent = t.logout;
-      document.getElementById('daily-progress-title').textContent = t.dailyProgress;
-      document.getElementById('memorized-today-label').textContent = t.memorizedToday;
-      document.getElementById('read-today-label').textContent = t.readToday;
-      document.getElementById('revised-today-label').textContent = t.revisedToday;
-      dailySubmit.textContent = t.submit;
-      document.getElementById('submitted-today-text').textContent = t.submittedToday;
-      editTodayBtn.textContent = t.editToday;
-      document.getElementById('edit-progress-title').textContent = t.editProgress;
-      document.getElementById('edit-memorized-label').textContent = t.editMemorized;
-      document.getElementById('edit-read-label').textContent = t.editRead;
-      document.getElementById('edit-revised-label').textContent = t.editRevised;
-      editSubmit.textContent = t.saveChanges;
-      document.getElementById('total-memorized-title').textContent = t.totalMemorized;
-      document.getElementById('surahs-memorized-title').textContent = t.surahsMemorized;
-      document.getElementById('current-surah-title').textContent = t.currentSurah;
-      document.getElementById('total-read-title').textContent = t.totalRead;
-      document.getElementById('total-revised-title').textContent = t.totalRevised;
-      document.getElementById('current-streak-title').textContent = t.currentStreak;
-      document.getElementById('longest-streak-title').textContent = t.longestStreak;
-      document.getElementById('badges-title').textContent = t.badges;
-      document.getElementById('motivation-title').textContent = t.motivation;
-      document.getElementById('next-milestone-label').textContent = `${t.nextMilestone}: `;
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      if (userData) updateUI(userData);
-    }
-
-    function checkReminder(userData) {
-      if ('Notification' in window && Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted' && !userData.lastActiveDate) {
-            new Notification('Qur\'an Memorize Tracker', {
-              body: 'Don’t forget to log your progress today!'
-            });
-          }
+        // Event Listeners
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', htmlElement.classList.contains('dark-mode'));
+            themeToggle.querySelector('.fa-moon').classList.toggle('hidden');
+            themeToggle.querySelector('.fa-sun').classList.toggle('hidden');
         });
-      }
-    }
 
-    // Initialize Feather Icons
-    feather.replace();
-  </script>
-</body>
-</html>
+        languageToggle.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            localStorage.setItem('language', lang);
+            updateLanguage(lang);
+            populateSurahSelect();
+        });
+
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+
+        loginBtn.addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            if (userData.email === email && userData.password === password) {
+                localStorage.setItem('isLoggedIn', 'true');
+                showMainApp();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        signupBtn.addEventListener('click', () => {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const totalVersesMemorized = parseInt(document.getElementById('signup-memorized').value) || 0;
+            userData = {
+                name,
+                email,
+                password,
+                totalVersesMemorized,
+                totalPagesRead: 0,
+                totalPagesRevised: 0,
+                currentStreak: 0,
+                longestStreak: 0,
+                lastActiveDate: null,
+                dailyLogs: [],
+                points: totalVersesMemorized * 10,
+                level: Math.floor(totalVersesMemorized * 10 / 100) + 1,
+                badges: [],
+                verses: {}
+            };
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('isLoggedIn', 'true');
+            showMainApp();
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userData');
+            userData = {};
+            mainApp.classList.add('hidden');
+            authSection.classList.remove('hidden');
+            alert('Logged out successfully!');
+        });
+
+        profileAvatar.addEventListener('click', () => {
+            alert(`User: ${userData.name}`);
+        });
+
+        progressForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleDailySubmission();
+        });
+
+        editTodayBtn.addEventListener('click', () => {
+            const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), new Date()));
+            if (todayLog) {
+                document.getElementById('edit-verses').value = todayLog.memorized;
+                document.getElementById('edit-pages').value = todayLog.read;
+                document.getElementById('edit-revised').value = todayLog.revised;
+                document.getElementById('edit-surah').value = todayLog.surah;
+                document.getElementById('edit-notes').value = todayLog.notes || '';
+                document.getElementById('daily-form').classList.add('hidden');
+                document.getElementById('daily-message').classList.add('hidden');
+                document.getElementById('edit-form').classList.remove('hidden');
+            }
+        });
+
+        editSubmit.addEventListener('click', (e) => {
+            e.preventDefault();
+            const todayLogIndex = userData.dailyLogs.findIndex(log => isSameDay(new Date(log.date), new Date()));
+            if (todayLogIndex !== -1) {
+                const oldLog = userData.dailyLogs[todayLogIndex];
+                const newMemorized = parseInt(document.getElementById('edit-verses').value) || 0;
+                const newRead = parseInt(document.getElementById('edit-pages').value) || 0;
+                const newRevised = parseInt(document.getElementById('edit-revised').value) || 0;
+                const newSurah = document.getElementById('edit-surah').value;
+                const newNotes = document.getElementById('edit-notes').value;
+
+                if (newMemorized < 0 || newRead < 0 || newRevised < 0) {
+                    alert('Please enter non-negative numbers.');
+                    return;
+                }
+
+                userData.totalVersesMemorized = userData.totalVersesMemorized - oldLog.memorized + newMemorized;
+                userData.totalPagesRead = userData.totalPagesRead - oldLog.read + newRead;
+                userData.totalPagesRevised = userData.totalPagesRevised - oldLog.revised + newRevised;
+
+                userData.dailyLogs[todayLogIndex] = {
+                    date: new Date().toISOString(),
+                    memorized: newMemorized,
+                    read: newRead,
+                    revised: newRevised,
+                    surah: newSurah,
+                    notes: newNotes
+                };
+
+                updatePoints(userData, newMemorized - oldLog.memorized, newRead - oldLog.read, newRevised - oldLog.revised);
+                updateBadges(userData);
+                localStorage.setItem('userData', JSON.stringify(userData));
+                updateUI(userData);
+                document.getElementById('edit-form').classList.add('hidden');
+                document.getElementById('daily-message').classList.remove('hidden');
+            }
+        });
+
+        openVerseModal.addEventListener('click', () => {
+            const surahNumber = document.getElementById('surah').value;
+            if (surahNumber) {
+                openVerseModalForSurah(surahNumber);
+            } else {
+                alert('Please select a surah first.');
+            }
+        });
+
+        closeModal.addEventListener('click', () => {
+            verseModal.classList.add('hidden');
+        });
+
+        verseModal.addEventListener('click', (e) => {
+            if (e.target === verseModal) {
+                verseModal.classList.add('hidden');
+            }
+        });
+
+        resetVerses.addEventListener('click', () => {
+            const surahNumber = verseModal.dataset.surahNumber;
+            if (surahNumber && userData.verses[surahNumber]) {
+                userData.verses[surahNumber] = [];
+                renderVerseModal(surahNumber);
+                localStorage.setItem('userData', JSON.stringify(userData));
+            }
+        });
+
+        saveVerses.addEventListener('click', () => {
+            const surahNumber = verseModal.dataset.surahNumber;
+            if (surahNumber) {
+                const checkboxes = document.querySelectorAll('#verse-list input[type="checkbox"]');
+                const memorizedVerses = [];
+                checkboxes.forEach((checkbox, index) => {
+                    if (checkbox.checked) {
+                        memorizedVerses.push(index + 1);
+                    }
+                });
+                userData.verses[surahNumber] = memorizedVerses;
+                const prevVerses = userData.totalVersesMemorized;
+                userData.totalVersesMemorized = Object.values(userData.verses).reduce((sum, verses) => sum + verses.length, 0);
+                updatePoints(userData, userData.totalVersesMemorized - prevVerses, 0, 0);
+                updateBadges(userData);
+                localStorage.setItem('userData', JSON.stringify(userData));
+                updateUI(userData);
+                verseModal.classList.add('hidden');
+            }
+        });
+
+        addSurahBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const surahSelect = document.getElementById('surah');
+            if (surahSelect.value && !userData.activeSurahs?.includes(surahSelect.value)) {
+                userData.activeSurahs = userData.activeSurahs || [];
+                userData.activeSurahs.push(surahSelect.value);
+                localStorage.setItem('userData', JSON.stringify(userData));
+                updateSurahProgress();
+            }
+        });
+
+        // Utility Functions
+        function isSameDay(date1, date2) {
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        }
+
+        function getMemorizationStats(totalVersesMemorized) {
+            let fullyMemorized = 0;
+            let currentSurah = null;
+            let currentProgress = 0;
+            let cumulativeVerses = 0;
+            const totalQuranVerses = surahs.reduce((sum, surah) => sum + surah.verses, 0);
+
+            for (const surah of surahs) {
+                cumulativeVerses += surah.verses;
+                if (totalVersesMemorized >= cumulativeVerses) {
+                    fullyMemorized++;
+                } else {
+                    currentSurah = surah;
+                    const versesInSurah = surah.verses;
+                    const versesMemorizedInSurah = totalVersesMemorized - (cumulativeVerses - surah.verses);
+                    currentProgress = (versesMemorizedInSurah / versesInSurah) * 100;
+                    break;
+                }
+            }
+
+            return { fullyMemorized, currentSurah, currentProgress, quranProgress: (totalVersesMemorized / totalQuranVerses) * 100 };
+        }
+
+        function updatePoints(userData, memorizedToday, readToday, revisedToday) {
+            const pointsEarned = (memorizedToday * 10) + (readToday * 2) + (revisedToday * 5);
+            userData.points += pointsEarned;
+            const levelThreshold = 100;
+            userData.level = Math.floor(userData.points / levelThreshold) + 1;
+        }
+
+        function updateBadges(userData) {
+            const earnedBadges = badges.filter(badge => userData.totalVersesMemorized >= badge.verses)
+                .map(badge => badge.id);
+            userData.badges = earnedBadges;
+            localStorage.setItem('userData', JSON.stringify(userData));
+
+            const badgesList = document.getElementById('badges-list');
+            badgesList.innerHTML = '';
+            badges.forEach(badge => {
+                const isEarned = userData.badges.includes(badge.id);
+                const div = document.createElement('div');
+                div.className = `badge p-3 rounded-lg flex flex-col items-center justify-center ${isEarned ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-700 opacity-50'}`;
+                div.innerHTML = `
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1 ${isEarned ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}">
+                        <i class="fas fa-${badge.icon} text-white"></i>
+                    </div>
+                    <span class="text-xs font-medium text-center">${languageToggle.value === 'ar' ? badge.nameAr : badge.name}</span>
+                `;
+                badgesList.appendChild(div);
+            });
+            document.getElementById('badges-unlocked').textContent = `${userData.badges.length}/${badges.length} ${translations[languageToggle.value].badgesUnlocked}`;
+        }
+
+        function populateSurahSelect() {
+            const surahSelect = document.getElementById('surah');
+            const editSurahSelect = document.getElementById('edit-surah');
+            surahSelect.innerHTML = '<option value="">Select Surah</option>';
+            editSurahSelect.innerHTML = '<option value="">Select Surah</option>';
+            surahs.forEach(surah => {
+                const option = document.createElement('option');
+                option.value = surah.number;
+                option.textContent = languageToggle.value === 'ar' ? `${surah.number}. ${surah.nameAr}` : `${surah.number}. ${surah.name}`;
+                surahSelect.appendChild(option);
+                editSurahSelect.appendChild(option.cloneNode(true));
+            });
+        }
+
+        function openVerseModalForSurah(surahNumber) {
+            const surah = surahs.find(s => s.number == surahNumber);
+            if (!surah) return;
+            verseModal.dataset.surahNumber = surahNumber;
+            document.getElementById('verse-modal-surah').textContent = languageToggle.value === 'ar' ? surah.nameAr : surah.name;
+            document.getElementById('verse-modal-verses').textContent = `${surah.verses} ${translations[languageToggle.value].verseModalVerses}`;
+            renderVerseModal(surahNumber);
+            verseModal.classList.remove('hidden');
+        }
+
+        function renderVerseModal(surahNumber) {
+            const surah = surahs.find(s => s.number == surahNumber);
+            const verseList = document.getElementById('verse-list');
+            verseList.innerHTML = '';
+            for (let i = 1; i <= surah.verses; i++) {
+                const div = document.createElement('div');
+                div.className = 'verse-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between cursor-pointer';
+                div.innerHTML = `
+                    <span class="text-gray-700 dark:text-gray-300">Verse ${i}</span>
+                    <input type="checkbox" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500" ${userData.verses[surahNumber]?.includes(i) ? 'checked' : ''}>
+                `;
+                verseList.appendChild(div);
+            }
+        }
+
+        function updateSurahProgress() {
+            const surahProgressList = document.getElementById('surah-progress-list');
+            surahProgressList.innerHTML = '';
+            const activeSurahs = userData.activeSurahs || [];
+            activeSurahs.forEach(surahNumber => {
+                const surah = surahs.find(s => s.number == surahNumber);
+                if (!surah) return;
+                const memorizedVerses = userData.verses[surahNumber]?.length || 0;
+                const progress = (memorizedVerses / surah.verses) * 100;
+                const div = document.createElement('div');
+                div.className = 'mb-4';
+                div.innerHTML = `
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${languageToggle.value === 'ar' ? surah.nameAr : surah.name} (${surah.number})</span>
+                        <span class="text-sm font-medium text-green-600 dark:text-green-400">${memorizedVerses}/${surah.verses} (${Math.round(progress)}%)</span>
+                    </div>
+                    <div class="progress-bar cursor-pointer" data-surah="${surahNumber}">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                `;
+                surahProgressList.appendChild(div);
+            });
+
+            // Add click handlers for progress bars
+            document.querySelectorAll('.progress-bar').forEach(bar => {
+                bar.addEventListener('click', () => {
+                    openVerseModalForSurah(bar.dataset.surah);
+                });
+            });
+        }
+
+        function renderHeatmap() {
+            const heatmap = document.getElementById('heatmap');
+            heatmap.innerHTML = '';
+            const today = new Date();
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                const log = userData.dailyLogs.find(log => isSameDay(new Date(log.date), date));
+                const verses = log?.memorized || 0;
+                const intensity = verses >= 20 ? 'bg-green-700' : verses >= 15 ? 'bg-green-600' : verses >= 10 ? 'bg-green-500' : verses >= 5 ? 'bg-green-400' : verses >= 3 ? 'bg-green-300' : verses >= 1 ? 'bg-green-200' : 'bg-green-100';
+                const div = document.createElement('div');
+                div.className = `heatmap-day ${intensity} dark:${intensity.replace('bg-green-', 'bg-green-')}` + (i === 0 ? ' border-2 border-green-500' : '');
+                div.title = `${verses} verses on ${date.toLocaleDateString()}`;
+                heatmap.appendChild(div);
+            }
+        }
+
+        function updateRecentActivity() {
+            const activityList = document.getElementById('activity-list');
+            activityList.innerHTML = '';
+            const recentLogs = userData.dailyLogs.slice(-3).reverse();
+            recentLogs.forEach(log => {
+                const surah = surahs.find(s => s.number == log.surah);
+                const div = document.createElement('div');
+                div.className = 'activity-item animate-fade-in p-
