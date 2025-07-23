@@ -1,483 +1,307 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Qur'an Memorize Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
-
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+            color: #2d3748;
+            transition: background-color 0.3s, color 0.3s;
         }
-
-        .arabic {
-            font-family: 'Amiri', serif;
-            font-size: 1.2em;
+        .dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
         }
-
+        .dark-mode .bg-white {
+            background-color: #2d3748;
+        }
+        .dark-mode .bg-gray-100 {
+            background-color: #4a5568;
+        }
+        .dark-mode .bg-green-50 {
+            background-color: #2f855a;
+        }
+        .dark-mode .text-gray-700 {
+            color: #e2e8f0;
+        }
+        .dark-mode .text-gray-600 {
+            color: #a0aec0;
+        }
+        .dark-mode .border-gray-200 {
+            border-color: #4a5568;
+        }
         .progress-bar {
+            background-color: #e2e8f0;
             height: 8px;
-            border-radius: 4px;
-            background-color: #e5e7eb;
+            border-radius: 9999px;
             overflow: hidden;
         }
-
+        .dark-mode .progress-bar {
+            background-color: #4a5568;
+        }
         .progress-fill {
+            background-color: #38a169;
             height: 100%;
-            background-color: #0A5E2A;
-            transition: width 0.3s ease;
+            transition: width 0.3s ease-in-out;
         }
-
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+        }
         .heatmap-day {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
-            margin: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background-color: #e2e8f0;
         }
-
-        .verse-item:hover {
-            background-color: rgba(10, 94, 42, 0.05);
+        .dark-mode .heatmap-day.bg-green-100 {
+            background-color: #2f855a;
         }
-
-        .badge {
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+        .dark-mode .heatmap-day.bg-green-200 {
+            background-color: #38a169;
         }
-
-        .badge:hover {
-            transform: translateY(-2px);
+        .dark-mode .heatmap-day.bg-green-300 {
+            background-color: #48bb78;
         }
-
-        .dark-mode {
-            background-color: #111827;
-            color: #f3f4f6;
+        .dark-mode .heatmap-day.bg-green-400 {
+            background-color: #68d391;
         }
-
-        .dark-mode .card {
-            background-color: #1f2937;
-            color: #f3f4f6;
+        .dark-mode .heatmap-day.bg-green-500 {
+            background-color: #9ae6b4;
         }
-
-        .dark-mode .verse-item:hover {
-            background-color: rgba(10, 94, 42, 0.2);
+        .dark-mode .heatmap-day.bg-green-600 {
+            background-color: #b2f5ea;
         }
-
+        .dark-mode .heatmap-day.bg-green-700 {
+            background-color: #e6fffa;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
+        .modal {
+            display: none;
+        }
+        .modal:not(.hidden) {
+            display: flex;
         }
     </style>
 </head>
-<body class="min-h-screen dark-mode:bg-gray-900 dark-mode:text-gray-200 transition-colors duration-300">
-    <!-- Login/Signup Section -->
-    <div id="auth-section" class="min-h-screen flex items-center justify-center">
-        <div class="bg-white rounded-lg p-8 w-full max-w-md shadow-lg dark:bg-gray-700">
-            <h1 id="auth-title" class="text-2xl font-bold mb-6 text-center text-green-800 dark:text-green-300">Qur'an Memorize Tracker</h1>
+<body>
+    <div id="auth-section" class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h1 id="auth-title" class="text-2xl font-bold mb-6 text-center"></h1>
+            
+            <!-- Login Form -->
             <div id="login-form" class="space-y-4">
                 <div>
-                    <label for="login-email" id="login-email-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email</label>
-                    <input type="email" id="login-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Email">
+                    <label id="login-email-label" for="login-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input type="email" id="login-email" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Email">
                 </div>
                 <div>
-                    <label for="login-password" id="login-password-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Password</label>
-                    <input type="password" id="login-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Password">
+                    <label id="login-password-label" for="login-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input type="password" id="login-password" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Password">
                 </div>
-                <button id="login-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Login</button>
-                <p class="text-center text-sm text-gray-600 dark:text-gray-400"><span id="no-account-text">No account?</span> <a href="#" id="show-signup" class="text-green-600 hover:underline">Sign up</a></p>
+                <button id="login-btn" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
+                <p id="no-account-text" class="text-center text-sm text-gray-600 dark:text-gray-400"></p>
+                <a id="show-signup" href="#" class="block text-center text-green-600 hover:underline"></a>
             </div>
+            
+            <!-- Signup Form -->
             <div id="signup-form" class="space-y-4 hidden">
                 <div>
-                    <label for="signup-name" id="signup-name-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Name</label>
-                    <input type="text" id="signup-name" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Name">
+                    <label id="signup-name-label" for="signup-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input type="text" id="signup-name" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Name">
                 </div>
                 <div>
-                    <label for="signup-email" id="signup-email-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email</label>
-                    <input type="email" id="signup-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Email">
+                    <label id="signup-email-label" for="signup-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input type="email" id="signup-email" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Email">
                 </div>
                 <div>
-                    <label for="signup-password" id="signup-password-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Password</label>
-                    <input type="password" id="signup-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Password">
+                    <label id="signup-password-label" for="signup-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input type="password" id="signup-password" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Password">
                 </div>
                 <div>
-                    <label for="signup-memorized" id="signup-memorized-label" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total verses memorized so far</label>
-                    <input type="number" id="signup-memorized" min="0" value="0" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500" aria-label="Total verses memorized">
+                    <label id="signup-memorized-label" for="signup-memorized" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input type="number" id="signup-memorized" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Total verses memorized">
                 </div>
-                <button id="signup-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Sign Up</button>
-                <p class="text-center text-sm text-gray-600 dark:text-gray-400"><span id="have-account-text">Have an account?</span> <a href="#" id="show-login" class="text-green-600 hover:underline">Login</a></p>
+                <button id="signup-btn" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
+                <p id="have-account-text" class="text-center text-sm text-gray-600 dark:text-gray-400"></p>
+                <a id="show-login" href="#" class="block text-center text-green-600 hover:underline"></a>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div id="main-app" class="container mx-auto px-4 py-8 hidden">
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h1 id="welcome-text" class="text-2xl md:text-3xl font-bold text-green-800 dark:text-green-300">
-                    <i class="fas fa-book-quran mr-2"></i> Qur'an Memorize Tracker
-                </h1>
-                <p class="text-gray-600 dark:text-gray-300">Track your memorization progress daily</p>
-            </div>
+    <div id="main-app" class="min-h-screen p-6 hidden">
+        <header class="flex justify-between items-center mb-6">
+            <h1 id="welcome-text" class="text-2xl font-bold flex items-center"></h1>
             <div class="flex items-center space-x-4">
-                <select id="language-toggle" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
+                <select id="language-toggle" class="border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
                     <option value="en">English</option>
-                    <option value="ar">Arabic</option>
+                    <option value="ar">العربية</option>
                 </select>
-                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700" aria-label="Toggle theme">
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <i class="fas fa-sun hidden dark:inline"></i>
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Toggle theme">
+                    <i class="fas fa-moon text-gray-700 dark:text-gray-300"></i>
+                    <i class="fas fa-sun text-gray-700 dark:text-gray-300 hidden"></i>
                 </button>
-                <div class="relative">
-                    <img id="profile-avatar" src="https://ui-avatars.com/api/?name=User&background=0A5E2A&color=fff" 
-                         alt="User profile" class="w-10 h-10 rounded-full cursor-pointer" role="button" aria-label="Open user menu">
-                    <div class="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
-                </div>
-                <button id="logout-btn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition focus:ring-2 focus:ring-red-500">Logout</button>
+                <img id="profile-avatar" class="w-10 h-10 rounded-full cursor-pointer" alt="Profile avatar">
+                <button id="logout-btn" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"></button>
             </div>
         </header>
+        <p id="track-progress" class="text-gray-600 dark:text-gray-400 mb-6"></p>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="total-memorized-title" class="text-gray-500 dark:text-gray-400 text-sm">Verses Memorized</p>
-                                <h3 id="total-memorized" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
-                                <i class="fas fa-book-quran"></i>
-                            </div>
-                        </div>
-                        <div id="today-memorized" class="mt-2 text-sm text-green-600 dark:text-green-400">
-                            <i class="fas fa-arrow-up mr-1"></i> 0 today
-                        </div>
+        <!-- Daily Progress -->
+        <section class="mb-8">
+            <h2 id="daily-progress-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
+            <div id="daily-form" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                <form id="progressForm" class="space-y-4">
+                    <div>
+                        <label id="memorized-today-label" for="verses" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <input type="number" id="verses" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Verses memorized today">
                     </div>
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="current-streak-title" class="text-gray-500 dark:text-gray-400 text-sm">Current Streak</p>
-                                <h3 id="current-streak" class="text-2xl font-bold text-green-700 dark:text-green-300">0 days</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300">
-                                <i class="fas fa-fire"></i>
-                            </div>
-                        </div>
-                        <div class="mt-2 text-sm text-green-600 dark:text-green-400">
-                            <i class="fas fa-calendar-check mr-1"></i> Don't break it!
-                        </div>
+                    <div>
+                        <label id="read-today-label" for="pages" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <input type="number" id="pages" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Pages read today">
                     </div>
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="surahs-memorized-title" class="text-gray-500 dark:text-gray-400 text-sm">Surahs Completed</p>
-                                <h3 id="surahs-memorized" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                                <i class="fas fa-star"></i>
-                            </div>
-                        </div>
-                        <div id="quran-progress" class="mt-2 text-sm text-green-600 dark:text-green-400">
-                            <i class="fas fa-trophy mr-1"></i> 0% of Qur'an
-                        </div>
+                    <div>
+                        <label id="revised-today-label" for="revised" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <input type="number" id="revised" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Pages revised today">
                     </div>
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="total-revised-title" class="text-gray-500 dark:text-gray-400 text-sm">Pages Revised</p>
-                                <h3 id="total-revised" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-                        </div>
-                        <div id="today-revised" class="mt-2 text-sm text-green-600 dark:text-green-400">
-                            <i class="fas fa-check-circle mr-1"></i> 0 today
-                        </div>
+                    <div>
+                        <label id="surah-label" for="surah" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <select id="surah" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Current surah"></select>
                     </div>
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="total-read-title" class="text-gray-500 dark:text-gray-400 text-sm">Pages Read</p>
-                                <h3 id="total-read" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">
-                                <i class="fas fa-book"></i>
-                            </div>
-                        </div>
-                        <div id="today-read" class="mt-2 text-sm text-green-600 dark:text-green-400">
-                            <i class="fas fa-check-circle mr-1"></i> 0 today
-                        </div>
+                    <div>
+                        <label id="notes-label" for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <textarea id="notes" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" rows="4" aria-label="Notes"></textarea>
                     </div>
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="level-title" class="text-gray-500 dark:text-gray-400 text-sm">Level</p>
-                                <h3 id="level" class="text-2xl font-bold text-green-700 dark:text-green-300">1</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300">
-                                <i class="fas fa-trophy"></i>
-                            </div>
-                        </div>
+                    <div class="flex space-x-4">
+                        <button id="daily-submit" type="submit" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
+                        <button id="open-verse-modal" type="button" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></button>
                     </div>
-                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="points-title" class="text-gray-500 dark:text-gray-400 text-sm">Points</p>
-                                <h3 id="points" class="text-2xl font-bold text-green-700 dark:text-green-300">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
-                                <i class="fas fa-star"></i>
-                            </div>
-                        </div>
+                </form>
+            </div>
+            <div id="daily-message" class="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow hidden">
+                <p id="submitted-today-text" class="text-green-700 dark:text-green-300"></p>
+                <button id="edit-today-btn" class="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></button>
+            </div>
+            <div id="edit-form" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hidden">
+                <h3 id="edit-progress-title" class="text-lg font-semibold mb-4"></h3>
+                <div class="space-y-4">
+                    <div>
+                        <label id="edit-memorized-label" for="edit-verses" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <input type="number" id="edit-verses" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit verses memorized">
                     </div>
-                </div>
-
-                <!-- Daily Log Form -->
-                <div id="daily-input-section" class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h2 id="daily-progress-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
-                        <i class="fas fa-plus-circle mr-2"></i> Today's Progress
-                    </h2>
-                    <div id="daily-form">
-                        <form id="progressForm" class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="verses" id="memorized-today-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Verses Memorized</label>
-                                    <div class="relative">
-                                        <input type="number" id="verses" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Verses memorized today">
-                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">ayat</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="pages" id="read-today-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Read</label>
-                                    <div class="relative">
-                                        <input type="number" id="pages" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages read today">
-                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="revised" id="revised-today-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Revised</label>
-                                    <div class="relative">
-                                        <input type="number" id="revised" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages revised today">
-                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="surah" id="surah-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Surah</label>
-                                <select id="surah" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Select current surah"></select>
-                            </div>
-                            <div>
-                                <label for="notes" id="notes-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                                <textarea id="notes" rows="2" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" placeholder="Any reflections or difficulties..." aria-label="Notes"></textarea>
-                            </div>
-                            <div class="flex justify-end space-x-2">
-                                <button type="button" id="open-verse-modal" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200">
-                                    <i class="fas fa-edit mr-2"></i> Mark Verses
-                                </button>
-                                <button type="submit" id="daily-submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
-                                    <i class="fas fa-save mr-2"></i> Save Progress
-                                </button>
-                            </div>
-                        </form>
+                    <div>
+                        <label id="edit-read-label" for="edit-pages" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <input type="number" id="edit-pages" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit pages read">
                     </div>
-                    <div id="daily-message" class="hidden">
-                        <p id="submitted-today-text" class="text-center text-green-500 font-medium">You have already submitted for today.</p>
-                        <button id="edit-today-btn" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-blue-500">Edit Today's Submission</button>
+                    <div>
+                        <label id="edit-revised-label" for="edit-revised" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <input type="number" id="edit-revised" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit pages revised">
                     </div>
-                    <div id="edit-form" class="space-y-4 hidden">
-                        <h2 id="edit-progress-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">Edit Today's Progress</h2>
-                        <form id="editProgressForm" class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="edit-verses" id="edit-memorized-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Verses Memorized</label>
-                                    <div class="relative">
-                                        <input type="number" id="edit-verses" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Verses memorized today">
-                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">ayat</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="edit-pages" id="edit-read-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Read</label>
-                                    <div class="relative">
-                                        <input type="number" id="edit-pages" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages read today">
-                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="edit-revised" id="edit-revised-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Revised</label>
-                                    <div class="relative">
-                                        <input type="number" id="edit-revised" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Pages revised today">
-                                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="edit-surah" id="edit-surah-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Surah</label>
-                                <select id="edit-surah" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" aria-label="Select current surah"></select>
-                            </div>
-                            <div>
-                                <label for="edit-notes" id="edit-notes-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                                <textarea id="edit-notes" rows="2" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" placeholder="Any reflections or difficulties..." aria-label="Notes"></textarea>
-                            </div>
-                            <div class="flex justify-end">
-                                <button type="submit" id="edit-submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
-                                    <i class="fas fa-save mr-2"></i> Save Changes
-                                </button>
-                            </div>
-                        </form>
+                    <div>
+                        <label id="edit-surah-label" for="edit-surah" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <select id="edit-surah" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit current surah"></select>
                     </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 id="recent-activity-title" class="text-xl font-bold text-green-800 dark:text-green-300">
-                            <i class="fas fa-history mr-2"></i> Recent Activity
-                        </h2>
-                        <a href="#" id="view-all-activity" class="text-sm text-green-600 dark:text-green-400 hover:underline">View All</a>
+                    <div>
+                        <label id="edit-notes-label" for="edit-notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                        <textarea id="edit-notes" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" rows="4" aria-label="Edit notes"></textarea>
                     </div>
-                    <div id="activity-list" class="space-y-4"></div>
+                    <button id="edit-submit" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
                 </div>
             </div>
+        </section>
 
-            <!-- Right Column -->
-            <div class="space-y-6">
-                <!-- Surah Progress -->
-                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h2 id="surah-progress-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
-                        <i class="fas fa-tasks mr-2"></i> Surah Progress
-                    </h2>
-                    <div id="surah-progress-list" class="space-y-4"></div>
-                    <div class="text-center mt-4">
-                        <button id="add-surah-btn" class="text-green-600 dark:text-green-400 hover:underline text-sm font-medium">
-                            <i class="fas fa-plus-circle mr-1"></i> Add Another Surah
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Memorization Heatmap -->
-                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h2 id="heatmap-title" class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
-                        <i class="fas fa-calendar-alt mr-2"></i> Activity Heatmap
-                    </h2>
-                    <div class="flex justify-center mb-2">
-                        <div id="heatmap" class="grid grid-cols-7 gap-1"></div>
-                    </div>
-                    <div id="heatmap-legend" class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Last 30 days of memorization activity
-                    </div>
-                </div>
-
-                <!-- Badges & Achievements -->
-                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 id="badges-title" class="text-xl font-bold text-green-800 dark:text-green-300">
-                            <i class="fas fa-award mr-2"></i> Achievements
-                        </h2>
-                        <span id="badges-unlocked" class="text-sm text-green-600 dark:text-green-400">0/4 unlocked</span>
-                    </div>
-                    <div id="badges-list" class="grid grid-cols-2 gap-3"></div>
-                    <div class="text-center mt-4">
-                        <button id="view-all-badges" class="text-green-600 dark:text-green-400 hover:underline text-sm font-medium">
-                            View All Achievements
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Motivational Quote -->
-                <div class="card bg-gradient-to-r from-green-600 to-green-800 rounded-lg shadow p-6 text-white">
-                    <div class="arabic text-xl mb-3 text-center leading-relaxed">
-                        وَقَالَ رَبُّكُمُ ادْعُونِي أَسْتَجِبْ لَكُمْ
-                    </div>
-                    <p class="text-center italic mb-2">
-                        "And your Lord says, 'Call upon Me; I will respond to you.'"
-                    </p>
-                    <p class="text-center text-sm opacity-80">
-                        - Qur'an 40:60
-                    </p>
-                </div>
+        <!-- Stats -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 id="total-memorized-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
+                <p id="total-memorized" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
+                <p id="today-memorized" class="text-sm text-gray-600 dark:text-gray-400"></p>
             </div>
-        </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 id="surahs-memorized-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
+                <p id="surahs-memorized" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
+                <p id="quran-progress" class="text-sm text-gray-600 dark:text-gray-400"></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 id="total-read-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
+                <p id="total-read" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
+                <p id="today-read" class="text-sm text-gray-600 dark:text-gray-400"></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 id="total-revised-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
+                <p id="total-revised" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
+                <p id="today-revised" class="text-sm text-gray-600 dark:text-gray-400"></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 id="current-streak-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
+                <p id="current-streak" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
+                <p id="dont-break" class="text-sm text-gray-600 dark:text-gray-400"></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 id="level-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
+                <p id="level" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
+                <p id="points" class="text-sm text-gray-600 dark:text-gray-400"></p>
+            </div>
+        </section>
 
-        <footer class="text-center text-gray-500 mt-8 dark:text-gray-400">
-            <p>Created by Omar Abdelaziz</p>
-        </footer>
-    </div>
+        <!-- Recent Activity -->
+        <section class="mb-8">
+            <h2 id="recent-activity-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
+            <div id="activity-list" class="space-y-4"></div>
+            <a id="view-all-activity" href="#" class="block text-green-600 hover:underline mt-4"></a>
+        </section>
 
-    <!-- Verse Memorization Modal -->
-    <div id="verseModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="verse-modal-title" class="text-xl font-bold text-green-800 dark:text-green-300">
-                        <i class="fas fa-edit mr-2"></i> Mark Verses
-                    </h3>
-                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" aria-label="Close modal">
-                        <i class="fas fa-times"></i>
-                    </button>
+        <!-- Surah Progress -->
+        <section class="mb-8">
+            <h2 id="surah-progress-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
+            <div id="surah-progress-list" class="space-y-4"></div>
+            <button id="add-surah-btn" class="mt-4 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
+        </section>
+
+        <!-- Heatmap -->
+        <section class="mb-8">
+            <h2 id="heatmap-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
+            <div id="heatmap" class="heatmap"></div>
+            <p id="heatmap-legend" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+        </section>
+
+        <!-- Badges -->
+        <section class="mb-8">
+            <h2 id="badges-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
+            <div id="badges-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            <p id="badges-unlocked" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+            <a id="view-all-badges" href="#" class="block text-green-600 hover:underline mt-2"></a>
+        </section>
+
+        <!-- Verse Modal -->
+        <div id="verseModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+                <h2 id="verse-modal-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
+                <div class="mb-4">
+                    <span id="verse-modal-surah" class="font-medium text-gray-700 dark:text-gray-300"></span> - 
+                    <span id="verse-modal-verses" class="text-gray-600 dark:text-gray-400"></span>
                 </div>
-                <div id="verse-modal-info" class="mb-4">
-                    <h4 id="verse-modal-surah" class="font-medium text-lg mb-2 text-center arabic"></h4>
-                    <p id="verse-modal-verses" class="text-center text-gray-600 dark:text-gray-400"></p>
+                <div id="verse-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                <div class="flex justify-end space-x-4 mt-4">
+                    <button id="reset-verses" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"></button>
+                    <button id="save-verses" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
                 </div>
-                <div id="verse-list" class="space-y-2 mb-4"></div>
-                <div class="flex justify-between mt-6">
-                    <button id="reset-verses" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <i class="fas fa-undo mr-2"></i> Reset
-                    </button>
-                    <button id="save-verses" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
-                        <i class="fas fa-save mr-2"></i> Save Changes
-                    </button>
-                </div>
+                <button id="closeModal" class="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 focus:outline-none">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -668,9 +492,6 @@
                 badges: "Achievements",
                 badgesUnlocked: "unlocked",
                 viewAllBadges: "View All Achievements",
-                motivation: "Motivation",
-                nextMilestone: "Next Milestone",
-                startMemorizing: "Start memorizing",
                 verseModalTitle: "Mark Verses",
                 verseModalSurah: "Surah",
                 verseModalVerses: "verses",
@@ -734,9 +555,6 @@
                 badges: "الإنجازات",
                 badgesUnlocked: "مفتوح",
                 viewAllBadges: "عرض كل الإنجازات",
-                motivation: "التحفيز",
-                nextMilestone: "المعلم التالي",
-                startMemorizing: "ابدأ الحفظ",
                 verseModalTitle: "وضع علامة على الآيات",
                 verseModalSurah: "سورة",
                 verseModalVerses: "آيات",
@@ -771,26 +589,17 @@
         const htmlElement = document.documentElement;
 
         // Initialize user data
-        let userData = JSON.parse(localStorage.getItem('userData')) || {
-            name: '',
-            email: '',
-            password: '',
-            totalVersesMemorized: 0,
-            totalPagesRead: 0,
-            totalPagesRevised: 0,
-            currentStreak: 0,
-            longestStreak: 0,
-            lastActiveDate: null,
-            dailyLogs: [],
-            points: 0,
-            level: 1,
-            badges: [],
-            verses: {} // Stores memorized verses per surah
-        };
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let userData = {};
+        let currentUserEmail = localStorage.getItem('currentUserEmail') || '';
 
         // Check login status, theme, and language on load
-        if (localStorage.getItem('isLoggedIn') === 'true' && userData.email) {
+        if (localStorage.getItem('isLoggedIn') === 'true' && currentUserEmail && users[currentUserEmail]) {
+            userData = users[currentUserEmail];
             showMainApp();
+        } else {
+            authSection.classList.remove('hidden');
+            mainApp.classList.add('hidden');
         }
         if (localStorage.getItem('darkMode') === 'true' || 
             (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -831,21 +640,42 @@
         });
 
         loginBtn.addEventListener('click', () => {
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
-            if (userData.email === email && userData.password === password) {
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+            if (users[email] && users[email].password === password) {
+                currentUserEmail = email;
+                userData = users[email];
                 localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('currentUserEmail', email);
+                localStorage.setItem('userData', JSON.stringify(userData)); // For backward compatibility
                 showMainApp();
+                document.getElementById('login-form').reset();
             } else {
-                alert('Invalid credentials');
+                alert('Invalid email or password.');
             }
         });
 
         signupBtn.addEventListener('click', () => {
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
             const totalVersesMemorized = parseInt(document.getElementById('signup-memorized').value) || 0;
+            if (!name || !email || !password) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return;
+            }
+            if (users[email]) {
+                alert('Email already registered. Please log in or use a different email.');
+                return;
+            }
             userData = {
                 name,
                 email,
@@ -860,17 +690,25 @@
                 points: totalVersesMemorized * 10,
                 level: Math.floor(totalVersesMemorized * 10 / 100) + 1,
                 badges: [],
-                verses: {}
+                verses: {},
+                activeSurahs: []
             };
-            localStorage.setItem('userData', JSON.stringify(userData));
+            users[email] = userData;
+            localStorage.setItem('users', JSON.stringify(users));
             localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('currentUserEmail', email);
+            localStorage.setItem('userData', JSON.stringify(userData)); // For backward compatibility
             showMainApp();
+            document.getElementById('signup-form').reset();
         });
 
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userData');
+            localStorage.removeItem('currentUserEmail');
+            localStorage.setItem('userData', JSON.stringify(userData)); // Save current user data
+            localStorage.setItem('users', JSON.stringify(users)); // Save all users
             userData = {};
+            currentUserEmail = '';
             mainApp.classList.add('hidden');
             authSection.classList.remove('hidden');
             alert('Logged out successfully!');
@@ -930,6 +768,8 @@
 
                 updatePoints(userData, newMemorized - oldLog.memorized, newRead - oldLog.read, newRevised - oldLog.revised);
                 updateBadges(userData);
+                updateStreak();
+                localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('userData', JSON.stringify(userData));
                 updateUI(userData);
                 document.getElementById('edit-form').classList.add('hidden');
@@ -961,7 +801,12 @@
             if (surahNumber && userData.verses[surahNumber]) {
                 userData.verses[surahNumber] = [];
                 renderVerseModal(surahNumber);
+                userData.totalVersesMemorized = Object.values(userData.verses).reduce((sum, verses) => sum + verses.length, 0);
+                updatePoints(userData, 0, 0, 0);
+                updateBadges(userData);
+                localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('userData', JSON.stringify(userData));
+                updateUI(userData);
             }
         });
 
@@ -980,6 +825,7 @@
                 userData.totalVersesMemorized = Object.values(userData.verses).reduce((sum, verses) => sum + verses.length, 0);
                 updatePoints(userData, userData.totalVersesMemorized - prevVerses, 0, 0);
                 updateBadges(userData);
+                localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('userData', JSON.stringify(userData));
                 updateUI(userData);
                 verseModal.classList.add('hidden');
@@ -992,6 +838,7 @@
             if (surahSelect.value && !userData.activeSurahs?.includes(surahSelect.value)) {
                 userData.activeSurahs = userData.activeSurahs || [];
                 userData.activeSurahs.push(surahSelect.value);
+                localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('userData', JSON.stringify(userData));
                 updateSurahProgress();
             }
@@ -1038,6 +885,7 @@
             const earnedBadges = badges.filter(badge => userData.totalVersesMemorized >= badge.verses)
                 .map(badge => badge.id);
             userData.badges = earnedBadges;
+            localStorage.setItem('users', JSON.stringify(users));
             localStorage.setItem('userData', JSON.stringify(userData));
 
             const badgesList = document.getElementById('badges-list');
@@ -1057,11 +905,25 @@
             document.getElementById('badges-unlocked').textContent = `${userData.badges.length}/${badges.length} ${translations[languageToggle.value].badgesUnlocked}`;
         }
 
+        function updateStreak() {
+            const today = new Date();
+            const lastActive = userData.lastActiveDate ? new Date(userData.lastActiveDate) : null;
+            if (lastActive && isSameDay(lastActive, new Date(today.setDate(today.getDate() - 1)))) {
+                userData.currentStreak++;
+            } else if (!lastActive || !isSameDay(lastActive, today)) {
+                userData.currentStreak = 1;
+            }
+            userData.longestStreak = Math.max(userData.longestStreak, userData.currentStreak);
+            userData.lastActiveDate = new Date().toISOString();
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
         function populateSurahSelect() {
             const surahSelect = document.getElementById('surah');
             const editSurahSelect = document.getElementById('edit-surah');
-            surahSelect.innerHTML = '<option value="">Select Surah</option>';
-            editSurahSelect.innerHTML = '<option value="">Select Surah</option>';
+            surahSelect.innerHTML = `<option value="">${translations[languageToggle.value].surah}</option>`;
+            editSurahSelect.innerHTML = `<option value="">${translations[languageToggle.value].surah}</option>`;
             surahs.forEach(surah => {
                 const option = document.createElement('option');
                 option.value = surah.number;
@@ -1151,4 +1013,126 @@
             recentLogs.forEach(log => {
                 const surah = surahs.find(s => s.number == log.surah);
                 const div = document.createElement('div');
-                div.className = 'activity-item animate-fade-in p-
+                div.className = 'activity-item animate-fade-in p-3 border-l-4 border-green-500 bg-green-50 dark:bg-gray-700 rounded-r-lg';
+                div.innerHTML = `
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="font-medium">${log.memorized > 0 ? `Memorized ${log.memorized} verses${surah ? ` from ${languageToggle.value === 'ar' ? surah.nameAr : surah.name}` : ''}` : ''}${log.read > 0 ? `${log.memorized > 0 ? ', ' : ''}Read ${log.read} pages` : ''}${log.revised > 0 ? `${log.memorized > 0 || log.read > 0 ? ', ' : ''}Revised ${log.revised} pages` : ''}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${new Date(log.date).toLocaleString()}</p>
+                        </div>
+                        <div class="text-green-600 dark:text-green-400">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                `;
+                activityList.appendChild(div);
+            });
+        }
+
+        function handleDailySubmission() {
+            const verses = parseInt(document.getElementById('verses').value) || 0;
+            const pages = parseInt(document.getElementById('pages').value) || 0;
+            const revised = parseInt(document.getElementById('revised').value) || 0;
+            const surah = document.getElementById('surah').value;
+            const notes = document.getElementById('notes').value;
+
+            if (verses < 0 || pages < 0 || revised < 0) {
+                alert('Please enter non-negative numbers.');
+                return;
+            }
+
+            const today = new Date();
+            const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), today));
+            if (todayLog) {
+                document.getElementById('daily-form').classList.add('hidden');
+                document.getElementById('daily-message').classList.remove('hidden');
+                return;
+            }
+
+            userData.totalVersesMemorized += verses;
+            userData.totalPagesRead += pages;
+            userData.totalPagesRevised += revised;
+            userData.dailyLogs.push({
+                date: today.toISOString(),
+                memorized: verses,
+                read: pages,
+                revised: revised,
+                surah: surah,
+                notes: notes
+            });
+
+            updatePoints(userData, verses, pages, revised);
+            updateBadges(userData);
+            updateStreak();
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('userData', JSON.stringify(userData));
+            updateUI(userData);
+            document.getElementById('progressForm').reset();
+            document.getElementById('daily-form').classList.add('hidden');
+            document.getElementById('daily-message').classList.remove('hidden');
+        }
+
+        function showMainApp() {
+            authSection.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            document.getElementById('profile-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=0A5E2A&color=fff`;
+            updateUI(userData);
+        }
+
+        function updateUI(userData) {
+            const stats = getMemorizationStats(userData.totalVersesMemorized);
+            document.getElementById('total-memorized').textContent = userData.totalVersesMemorized;
+            document.getElementById('surahs-memorized').textContent = stats.fullyMemorized;
+            document.getElementById('total-read').textContent = userData.totalPagesRead;
+            document.getElementById('total-revised').textContent = userData.totalPagesRevised;
+            document.getElementById('current-streak').textContent = `${userData.currentStreak} days`;
+            document.getElementById('level').textContent = userData.level;
+            document.getElementById('points').textContent = userData.points;
+            document.getElementById('quran-progress').textContent = `<i class="fas fa-trophy mr-1"></i> ${Math.round(stats.quranProgress)}% ${translations[languageToggle.value].quranProgress}`;
+
+            const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), new Date()));
+            document.getElementById('today-memorized').textContent = `<i class="fas fa-arrow-up mr-1"></i> ${todayLog ? todayLog.memorized : 0} ${translations[languageToggle.value].todayMemorized}`;
+            document.getElementById('today-read').textContent = `<i class="fas fa-check-circle mr-1"></i> ${todayLog ? todayLog.read : 0} ${translations[languageToggle.value].todayRead}`;
+            document.getElementById('today-revised').textContent = `<i class="fas fa-check-circle mr-1"></i> ${todayLog ? todayLog.revised : 0} ${translations[languageToggle.value].todayRevised}`;
+
+            if (todayLog) {
+                document.getElementById('daily-form').classList.add('hidden');
+                document.getElementById('daily-message').classList.remove('hidden');
+            } else {
+                document.getElementById('daily-form').classList.remove('hidden');
+                document.getElementById('daily-message').classList.add('hidden');
+            }
+
+            updateRecentActivity();
+            updateSurahProgress();
+            renderHeatmap();
+            updateBadges(userData);
+        }
+
+        function updateLanguage(lang) {
+            htmlElement.setAttribute('lang', lang);
+            htmlElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            document.getElementById('auth-title').textContent = translations[lang].authTitle;
+            document.getElementById('login-email-label').textContent = translations[lang].loginEmail;
+            document.getElementById('login-password-label').textContent = translations[lang].loginPassword;
+            document.getElementById('login-btn').textContent = translations[lang].loginBtn;
+            document.getElementById('no-account-text').textContent = translations[lang].noAccount;
+            document.getElementById('show-signup').textContent = translations[lang].signupLink;
+            document.getElementById('signup-name-label').textContent = translations[lang].signupName;
+            document.getElementById('signup-email-label').textContent = translations[lang].signupEmail;
+            document.getElementById('signup-password-label').textContent = translations[lang].signupPassword;
+            document.getElementById('signup-memorized-label').textContent = translations[lang].signupMemorized;
+            document.getElementById('signup-btn').textContent = translations[lang].signupBtn;
+            document.getElementById('have-account-text').textContent = translations[lang].haveAccount;
+            document.getElementById('show-login').textContent = translations[lang].loginLink;
+            document.getElementById('welcome-text').textContent = `<i class="fas fa-book-quran mr-2"></i> ${translations[lang].authTitle}`;
+            document.getElementById('track-progress').textContent = translations[lang].trackProgress;
+            document.getElementById('logout-btn').textContent = translations[lang].logout;
+            document.getElementById('daily-progress-title').textContent = `<i class="fas fa-plus-circle mr-2"></i> ${translations[lang].dailyProgress}`;
+            document.getElementById('memorized-today-label').textContent = translations[lang].memorizedToday;
+            document.getElementById('read-today-label').textContent = translations[lang].readToday;
+            document.getElementById('revised-today-label').textContent = translations[lang].revisedToday;
+            document.getElementById('surah-label').textContent = translations[lang].surah;
+            document.getElementById('notes-label').textContent = translations[lang].notes;
+            document.getElementById('daily-submit').innerHTML = `<i class="fas fa-save mr-2"></i> ${translations[lang].submit}`;
+            document.getElementById('open-verse-modal').innerHTML = `<i class="fas fa-edit mr-2"></i
