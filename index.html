@@ -1,264 +1,556 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Memorize Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/feather-icons"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qur'an Memorize Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .arabic {
+            font-family: 'Amiri', serif;
+            font-size: 1.2em;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #0A5E2A;
+            transition: width 0.3s ease;
+        }
+        
+        .heatmap-day {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            margin: 2px;
+        }
+        
+        .verse-item:hover {
+            background-color: rgba(10, 94, 42, 0.05);
+        }
+        
+        .badge {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .badge:hover {
+            transform: translateY(-2px);
+        }
+        
+        .dark-mode {
+            background-color: #111827;
+            color: #f3f4f6;
+        }
+        
+        .dark-mode .card {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+        
+        .dark-mode .verse-item:hover {
+            background-color: rgba(10, 94, 42, 0.2);
+        }
+        
+        /* Animation for new entries */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans dark:bg-gray-800 dark:text-gray-200 transition-colors duration-300">
-  <!-- Login/Signup Section -->
-  <div id="auth-section" class="min-h-screen flex items-center justify-center">
-    <div class="bg-white rounded-lg p-8 w-full max-w-md shadow-lg dark:bg-gray-700">
-      <h1 id="auth-title" class="text-2xl font-bold mb-6 text-center">Qur'an Memorize Tracker</h1>
-      <div id="login-form" class="space-y-4">
-        <div>
-          <label for="login-email" id="login-email-label" class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" id="login-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-green-800 dark:text-green-300">
+                    <i class="fas fa-book-quran mr-2"></i> Qur'an Memorize Tracker
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300">Track your memorization progress daily</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+                <div class="relative">
+                    <img src="https://ui-avatars.com/api/?name=User&background=0A5E2A&color=fff" 
+                         alt="Profile" class="w-10 h-10 rounded-full cursor-pointer">
+                    <div class="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Verses Memorized</p>
+                                <h3 class="text-2xl font-bold text-green-700 dark:text-green-300">1,245</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+                                <i class="fas fa-verse"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-arrow-up mr-1"></i> 15 today
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Current Streak</p>
+                                <h3 class="text-2xl font-bold text-green-700 dark:text-green-300">42 days</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-calendar-check mr-1"></i> Don't break it!
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Surahs Completed</p>
+                                <h3 class="text-2xl font-bold text-green-700 dark:text-green-300">15</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-trophy mr-1"></i> 20% of Qur'an
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Pages Revised</p>
+                                <h3 class="text-2xl font-bold text-green-700 dark:text-green-300">320</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-green-600 dark:text-green-400">
+                            <i class="fas fa-check-circle mr-1"></i> 5 today
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Daily Log Form -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
+                        <i class="fas fa-plus-circle mr-2"></i> Today's Progress
+                    </h2>
+                    
+                    <form id="progressForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="verses" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Verses Memorized</label>
+                                <div class="relative">
+                                    <input type="number" id="verses" min="0" 
+                                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white">
+                                    <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">ayat</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="pages" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Read</label>
+                                <div class="relative">
+                                    <input type="number" id="pages" min="0" 
+                                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white">
+                                    <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="revised" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pages Revised</label>
+                                <div class="relative">
+                                    <input type="number" id="revised" min="0" 
+                                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white">
+                                    <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">pages</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="surah" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Surah</label>
+                            <select id="surah" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white">
+                                <option value="">Select Surah</option>
+                                <option value="1">1. Al-Fatiha</option>
+                                <option value="2">2. Al-Baqarah</option>
+                                <option value="3">3. Al-Imran</option>
+                                <option value="18" selected>18. Al-Kahf</option>
+                                <option value="36">36. Ya-Sin</option>
+                                <option value="67">67. Al-Mulk</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+                            <textarea id="notes" rows="2" 
+                                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" 
+                                      placeholder="Any reflections or difficulties..."></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200 shadow-md">
+                                <i class="fas fa-save mr-2"></i> Save Progress
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-green-800 dark:text-green-300">
+                            <i class="fas fa-history mr-2"></i> Recent Activity
+                        </h2>
+                        <a href="#" class="text-sm text-green-600 dark:text-green-400 hover:underline">View All</a>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="activity-item animate-fade-in p-3 border-l-4 border-green-500 bg-green-50 dark:bg-gray-700 rounded-r-lg">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="font-medium">Memorized 5 verses from Al-Kahf</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Today at 5:30 PM</p>
+                                </div>
+                                <div class="text-green-600 dark:text-green-400">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item animate-fade-in p-3 border-l-4 border-blue-500 bg-blue-50 dark:bg-gray-700 rounded-r-lg">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="font-medium">Revised 3 pages of Juz' 29</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Yesterday at 7:15 AM</p>
+                                </div>
+                                <div class="text-blue-600 dark:text-blue-400">
+                                    <i class="fas fa-book-open"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item animate-fade-in p-3 border-l-4 border-yellow-500 bg-yellow-50 dark:bg-gray-700 rounded-r-lg">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="font-medium">7-day streak achieved!</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">2 days ago</p>
+                                </div>
+                                <div class="text-yellow-600 dark:text-yellow-400">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Surah Progress -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
+                        <i class="fas fa-tasks mr-2"></i> Surah Progress
+                    </h2>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Al-Kahf (18)</span>
+                            <span class="text-sm font-medium text-green-600 dark:text-green-400">45/110 (41%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 41%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Al-Baqarah (2)</span>
+                            <span class="text-sm font-medium text-green-600 dark:text-green-400">86/286 (30%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Ya-Sin (36)</span>
+                            <span class="text-sm font-medium text-green-600 dark:text-green-400">83/83 (100%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="text-green-600 dark:text-green-400 hover:underline text-sm font-medium">
+                            <i class="fas fa-plus-circle mr-1"></i> Add Another Surah
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Memorization Heatmap -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4 text-green-800 dark:text-green-300">
+                        <i class="fas fa-calendar-alt mr-2"></i> Activity Heatmap
+                    </h2>
+                    
+                    <div class="flex justify-center mb-2">
+                        <div class="grid grid-cols-7 gap-1">
+                            <!-- This would be generated dynamically in a real app -->
+                            <div class="heatmap-day bg-green-100 dark:bg-green-900" title="No activity"></div>
+                            <div class="heatmap-day bg-green-200 dark:bg-green-800" title="1-2 verses"></div>
+                            <div class="heatmap-day bg-green-300 dark:bg-green-700" title="3-5 verses"></div>
+                            <div class="heatmap-day bg-green-400 dark:bg-green-600" title="5-10 verses"></div>
+                            <div class="heatmap-day bg-green-500 dark:bg-green-500" title="10+ verses"></div>
+                            <div class="heatmap-day bg-green-600 dark:bg-green-400" title="15+ verses"></div>
+                            <div class="heatmap-day bg-green-700 dark:bg-green-300" title="20+ verses"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Last 30 days of memorization activity
+                    </div>
+                </div>
+                
+                <!-- Badges & Achievements -->
+                <div class="card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-green-800 dark:text-green-300">
+                            <i class="fas fa-award mr-2"></i> Achievements
+                        </h2>
+                        <span class="text-sm text-green-600 dark:text-green-400">5/15 unlocked</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="badge p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-yellow-400 dark:bg-yellow-600 rounded-full flex items-center justify-center mb-1">
+                                <i class="fas fa-fire text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-center">7-Day Streak</span>
+                        </div>
+                        
+                        <div class="badge p-3 bg-green-100 dark:bg-green-900 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-green-500 dark:bg-green-600 rounded-full flex items-center justify-center mb-1">
+                                <i class="fas fa-star text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-center">First Surah</span>
+                        </div>
+                        
+                        <div class="badge p-3 bg-blue-100 dark:bg-blue-900 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center mb-1">
+                                <i class="fas fa-flag text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-center">100 Verses</span>
+                        </div>
+                        
+                        <div class="badge p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center opacity-50">
+                            <div class="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center mb-1">
+                                <i class="fas fa-moon text-gray-500 dark:text-gray-400"></i>
+                            </div>
+                            <span class="text-xs font-medium text-center">Night Owl</span>
+                        </div>
+                        
+                        <div class="badge p-3 bg-purple-100 dark:bg-purple-900 rounded-lg flex flex-col items-center justify-center opacity-50">
+                            <div class="w-10 h-10 bg-purple-500 dark:bg-purple-600 rounded-full flex items-center justify-center mb-1">
+                                <i class="fas fa-book text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-center">Juz' Master</span>
+                        </div>
+                        
+                        <div class="badge p-3 bg-red-100 dark:bg-red-900 rounded-lg flex flex-col items-center justify-center opacity-50">
+                            <div class="w-10 h-10 bg-red-500 dark:bg-red-600 rounded-full flex items-center justify-center mb-1">
+                                <i class="fas fa-heart text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-center">Daily Habit</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="text-green-600 dark:text-green-400 hover:underline text-sm font-medium">
+                            View All Achievements
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Motivational Quote -->
+                <div class="card bg-gradient-to-r from-green-600 to-green-800 rounded-lg shadow p-6 text-white">
+                    <div class="arabic text-xl mb-3 text-center leading-relaxed">
+                        وَقَالَ رَبُّكُمُ ادْعُونِي أَسْتَجِبْ لَكُمْ
+                    </div>
+                    <p class="text-center italic mb-2">
+                        "And your Lord says, 'Call upon Me; I will respond to you.'"
+                    </p>
+                    <p class="text-center text-sm opacity-80">
+                        - Qur'an 40:60
+                    </p>
+                </div>
+            </div>
         </div>
-        <div>
-          <label for="login-password" id="login-password-label" class="block text-sm font-medium mb-1">Password</label>
-          <input type="password" id="login-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <button id="login-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Login</button>
-        <p class="text-center text-sm"><span id="no-account-text">No account?</span> <a href="#" id="show-signup" class="text-green-500 hover:underline">Sign up</a></p>
-      </div>
-      <div id="signup-form" class="space-y-4 hidden">
-        <div>
-          <label for="signup-name" id="signup-name-label" class="block text-sm font-medium mb-1">Name</label>
-          <input type="text" id="signup-name" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <div>
-          <label for="signup-email" id="signup-email-label" class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" id="signup-email" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <div>
-          <label for="signup-password" id="signup-password-label" class="block text-sm font-medium mb-1">Password</label>
-          <input type="password" id="signup-password" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <div>
-          <label for="signup-memorized" id="signup-memorized-label" class="block text-sm font-medium mb-1">Total verses memorized so far</label>
-          <input type="number" id="signup-memorized" min="0" value="0" required class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-        </div>
-        <button id="signup-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Sign Up</button>
-        <p class="text-center text-sm"><span id="have-account-text">Have an account?</span> <a href="#" id="show-login" class="text-green-500 hover:underline">Login</a></p>
-      </div>
     </div>
-  </div>
 
-  <!-- Main App Section -->
-  <div id="main-app" class="min-h-screen p-6 hidden">
-    <header class="flex justify-between items-center mb-8">
-      <h1 id="welcome-text" class="text-2xl font-bold">Welcome, <span id="user-name">User</span></h1>
-      <div class="flex items-center space-x-4">
-        <select id="language-toggle" class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
-          <option value="en">English</option>
-          <option value="ar">Arabic</option>
-        </select>
-        <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Toggle theme">
-          <i data-feather="moon" class="w-5 h-5"></i>
-        </button>
-        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded transition focus:ring-2 focus:ring-red-500">Logout</button>
-      </div>
-    </header>
-
-    <!-- Daily Input Section -->
-    <div id="daily-input-section" class="mb-8">
-      <div id="daily-form" class="bg-white rounded-lg p-6 shadow-md dark:bg-gray-700">
-        <h2 id="daily-progress-title" class="text-xl font-bold mb-4">Today's Progress</h2>
-        <div class="space-y-4">
-          <div>
-            <label for="memorized-today" id="memorized-today-label" class="block text-sm font-medium mb-1">Verses memorized today</label>
-            <input type="number" id="memorized-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="read-today" id="read-today-label" class="block text-sm font-medium mb-1">Pages read today</label>
-            <input type="number" id="read-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="revised-today" id="revised-today-label" class="block text-sm font-medium mb-1">Pages revised today</label>
-            <input type="number" id="revised-today" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <button id="daily-submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Submit</button>
+    <!-- Verse Memorization Modal (hidden by default) -->
+    <div id="verseModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-green-800 dark:text-green-300">
+                        <i class="fas fa-edit mr-2"></i> Mark Verses
+                    </h3>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="font-medium text-lg mb-2 text-center arabic">سورة الكهف</h4>
+                    <p class="text-center text-gray-600 dark:text-gray-400">Al-Kahf (18) - 110 verses</p>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="verse-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between cursor-pointer">
+                        <span class="text-gray-700 dark:text-gray-300">Verse 1</span>
+                        <input type="checkbox" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500">
+                    </div>
+                    
+                    <div class="verse-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between cursor-pointer">
+                        <span class="text-gray-700 dark:text-gray-300">Verse 2</span>
+                        <input type="checkbox" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500" checked>
+                    </div>
+                    
+                    <div class="verse-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between cursor-pointer">
+                        <span class="text-gray-700 dark:text-gray-300">Verse 3</span>
+                        <input type="checkbox" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500" checked>
+                    </div>
+                    
+                    <!-- More verses would be loaded here -->
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i class="fas fa-undo mr-2"></i> Reset
+                    </button>
+                    <button class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-      <div id="daily-message" class="bg-white rounded-lg p-6 hidden shadow-md dark:bg-gray-700">
-        <p id="submitted-today-text" class="text-center text-green-500 font-medium">You have already submitted for today.</p>
-        <button id="edit-today-btn" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-blue-500">Edit Today's Submission</button>
-      </div>
-      <div id="edit-form" class="bg-white rounded-lg p-6 hidden shadow-md dark:bg-gray-700">
-        <h2 id="edit-progress-title" class="text-xl font-bold mb-4">Edit Today's Progress</h2>
-        <div class="space-y-4">
-          <div>
-            <label for="edit-memorized" id="edit-memorized-label" class="block text-sm font-medium mb-1">Verses memorized today</label>
-            <input type="number" id="edit-memorized" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="edit-read" id="edit-read-label" class="block text-sm font-medium mb-1">Pages read today</label>
-            <input type="number" id="edit-read" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <div>
-            <label for="edit-revised" id="edit-revised-label" class="block text-sm font-medium mb-1">Pages revised today</label>
-            <input type="number" id="edit-revised" min="0" class="w-full px-4 py-2 rounded bg-gray-50 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition dark:bg-gray-600 dark:border-gray-500">
-          </div>
-          <button id="edit-submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition focus:ring-2 focus:ring-green-500">Save Changes</button>
-        </div>
-      </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="book" aria-label="Book icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-memorized-title" class="font-medium">Total Verses Memorized</h3>
-        </div>
-        <p id="total-memorized" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="award" aria-label="Award icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="surahs-memorized-title" class="font-medium">Surahs Fully Memorized</h3>
-        </div>
-        <p id="surahs-memorized" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="target" aria-label="Target icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="current-surah-title" class="font-medium">Current Surah</h3>
-        </div>
-        <p id="current-surah" class="text-2xl font-bold mb-2">None</p>
-        <div class="flex items-center text-sm text-gray-600 dark:text-gray-300">
-          <i data-feather="clock" aria-label="Clock icon" class="w-4 h-4 mr-1"></i>
-          <span id="current-progress">0% memorized</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600 mt-2">
-          <div id="progress-bar" class="bg-green-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-        </div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="book-open" aria-label="Book open icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-read-title" class="font-medium">Total Pages Read</h3>
-        </div>
-        <p id="total-read" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="repeat" aria-label="Repeat icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="total-revised-title" class="font-medium">Total Pages Revised</h3>
-        </div>
-        <p id="total-revised" class="text-2xl font-bold mb-2">0</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="calendar" aria-label="Calendar icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="current-streak-title" class="font-medium">Current Streak</h3>
-        </div>
-        <p id="current-streak" class="text-2xl font-bold mb-2">0 days</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="award" aria-label="Award icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="longest-streak-title" class="font-medium">Longest Streak</h3>
-        </div>
-        <p id="longest-streak" class="text-2xl font-bold mb-2">0 days</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="trending-up" aria-label="Trending up icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="level-title" class="font-medium">Level</h3>
-        </div>
-        <p id="level" class="text-2xl font-bold mb-2">1</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-md dark:bg-gray-700">
-        <div class="flex items-center mb-2">
-          <i data-feather="star" aria-label="Star icon" class="text-purple-400 w-5 h-5 mr-2"></i>
-          <h3 id="points-title" class="font-medium">Points</h3>
-        </div>
-        <p id="points" class="text-2xl font-bold mb-2">0</p>
-      </div>
-    </div>
-
-    <!-- Badges Section -->
-    <div class="bg-white rounded-lg p-6 mb-8 shadow-md dark:bg-gray-700">
-      <h2 id="badges-title" class="text-xl font-bold mb-4">Badges</h2>
-      <div id="badges-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-    </div>
-
-    <!-- Motivation Panel -->
-    <div class="bg-white rounded-lg p-6 shadow-md dark:bg-gray-700">
-      <h2 id="motivation-title" class="text-xl font-bold mb-4">Motivation</h2>
-      <p class="text-lg"><span id="next-milestone-label">Next Milestone:</span> <span id="next-milestone">Start memorizing</span></p>
-    </div>
-
-    <footer class="text-center text-gray-500 mt-8 dark:text-gray-400">
-      <p>Created by Omar Abdelaziz</p>
-    </footer>
-  </div>
-
-  <script>
-    // Surah Data (subset; add all 114 surahs for full implementation)
-    const surahs = [
-      { number: 1, name: "Al-Fatiha", nameAr: "الفاتحة", verses: 7 },
-      { number: 2, name: "Al-Baqarah", nameAr: "البقرة", verses: 286 },
-      { number: 3, name: "Aal-E-Imran", nameAr: "آل عمران", verses: 200 },
-      { number: 4, name: "An-Nisa", nameAr: "النساء", verses: 176 }
-    ];
-
-    // Language Translations
-    const translations = {
-      en: {
-        authTitle: "Qur'an Memorize Tracker",
-        loginEmail: "Email",
-        loginPassword: "Password",
-        loginBtn: "Login",
-        noAccount: "No account?",
-        signupLink: "Sign up",
-        signupName: "Name",
-        signupEmail: "Email",
-        signupPassword: "Password",
-        signupMemorized: "Total verses memorized so far",
-        signupBtn: "Sign Up",
-        haveAccount: "Have an account?",
-        loginLink: "Login",
-        welcome: "Welcome",
-        logout: "Logout",
-        dailyProgress: "Today's Progress",
-        memorizedToday: "Verses memorized today",
-        readToday: "Pages read today",
-        revisedToday: "Pages revised today",
-        submit: "Submit",
-        submittedToday: "You have already submitted for today.",
-        editToday: "Edit Today's Submission",
-        editProgress: "Edit Today's Progress",
-        editMemorized: "Verses memorized today",
-        editRead: "Pages read today",
-        editRevised: "Pages revised today",
-        saveChanges: "Save Changes",
-        totalMemorized: "Total Verses Memorized",
-        surahsMemorized: "Surahs Fully Memorized",
-        currentSurah: "Current Surah",
-        totalRead: "Total Pages Read",
-        totalRevised: "Total Pages Revised",
-        currentStreak: "Current Streak",
-        longestStreak: "Longest Streak",
-        level: "Level",
-        points: "Points",
-        badges: "Badges",
-        motivation: "Motivation",
-        nextMilestone: "Next Milestone",
-        startMemorizing: "Start memorizing"
-      },
-      ar: {
-        authTitle: "متتبع حفظ القرآن",
-        loginEmail: "البريد الإلكتروني",
-        loginPassword: "كلمة المرور",
-        loginBtn: "تسجيل الدخول",
-        noAccount: "ليس لديك حساب؟",
-        signupLink: "سجل",
-        signupName: "الاسم",
-        signupEmail: "البريد الإلكتروني",
-        signupPassword: "كلمة المرور",
-        signup
+    <script>
+        // Dark mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // Check for saved user preference or use OS preference
+        if (localStorage.getItem('darkMode') === 'true' || 
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('darkMode', html.classList.contains('dark'));
+        });
+        
+        // Form submission
+        const progressForm = document.getElementById('progressForm');
+        progressForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const verses = document.getElementById('verses').value;
+            const pages = document.getElementById('pages').value;
+            const revised = document.getElementById('revised').value;
+            const surah = document.getElementById('surah').value;
+            const notes = document.getElementById('notes').value;
+            
+            // In a real app, you would send this data to your backend
+            console.log('Form submitted:', { verses, pages, revised, surah, notes });
+            
+            // Show success message (in a real app, you might use a toast notification)
+            alert('Progress saved successfully!');
+            
+            // Reset form
+            progressForm.reset();
+            
+            // Add to recent activity (in a real app, this would come from the backend)
+            const activityContainer = document.querySelector('.activity-item').parentNode;
+            const newActivity = document.createElement('div');
+            newActivity.className = 'activity-item animate-fade-in p-3 border-l-4 border-green-500 bg-green-50 dark:bg-gray-700 rounded-r-lg';
+            newActivity.innerHTML = `
+                <div class="flex justify-between">
+                    <div>
+                        <p class="font-medium">Memorized ${verses || 0} verses${surah ? ' from ' + document.getElementById('surah').options[document.getElementById('surah').selectedIndex].text : ''}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Just now</p>
+                    </div>
+                    <div class="text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            `;
+            activityContainer.insertBefore(newActivity, activityContainer.firstChild);
+        });
+        
+        // Modal handling (for verse selection)
+        const verseModal = document.getElementById('verseModal');
+        const closeModal = document.getElementById('closeModal');
+        
+        // In a real app, you would open this when clicking on a surah progress item
+        function openVerseModal() {
+            verseModal.classList.remove('hidden');
+        }
+        
+        closeModal.addEventListener('click', () => {
+            verseModal.classList.add('hidden');
+        });
+        
+        // Close modal when clicking outside
+        verseModal.addEventListener('click', (e) => {
+            if (e.target === verseModal) {
+                verseModal.classList.add('hidden');
+            }
+        });
+        
+        // Demo: Open modal after 2 seconds to show functionality
+        setTimeout(openVerseModal, 2000);
+    </script>
+</body>
+</html>
