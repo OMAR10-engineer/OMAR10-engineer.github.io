@@ -1,1066 +1,759 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qur'an Memorize Tracker</title>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Omar's 7 Core Domains System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap');
+        
+        :root {
+            --primary: #1a5f7a;
+            --secondary: #57c5b6;
+            --accent: #159895;
+            --light: #f9f9f9;
+            --dark: #1e293b;
+        }
+        
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7fafc;
-            color: #2d3748;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
         }
-        .dark-mode {
-            background-color: #1a202c;
-            color: #e2e8f0;
+        
+        .arabic {
+            font-family: 'Amiri', serif;
+            direction: rtl;
         }
-        .dark-mode .bg-white {
-            background-color: #2d3748;
+        
+        .prayer-time {
+            transition: all 0.3s ease;
         }
-        .dark-mode .bg-gray-100 {
-            background-color: #4a5568;
+        
+        .prayer-time.active {
+            background-color: var(--accent);
+            color: white;
+            transform: scale(1.05);
         }
-        .dark-mode .bg-green-50 {
-            background-color: #2f855a;
+        
+        .domain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-        .dark-mode .text-gray-700 {
-            color: #e2e8f0;
+        
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
         }
-        .dark-mode .text-gray-600 {
-            color: #a0aec0;
+        
+        .checklist-item:hover {
+            background-color: rgba(255,255,255,0.8);
         }
-        .dark-mode .border-gray-200 {
-            border-color: #4a5568;
+        
+        .streak-flame {
+            animation: pulse 1.5s infinite;
         }
-        .progress-bar {
-            background-color: #e2e8f0;
-            height: 8px;
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .dark-mode .progress-bar {
-            background-color: #4a5568;
-        }
-        .progress-fill {
-            background-color: #38a169;
-            height: 100%;
-            transition: width 0.3s ease-in-out;
-        }
-        .heatmap {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 4px;
-        }
-        .heatmap-day {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            background-color: #e2e8f0;
-        }
-        .dark-mode .heatmap-day.bg-green-100 {
-            background-color: #2f855a;
-        }
-        .dark-mode .heatmap-day.bg-green-200 {
-            background-color: #38a169;
-        }
-        .dark-mode .heatmap-day.bg-green-300 {
-            background-color: #48bb78;
-        }
-        .dark-mode .heatmap-day.bg-green-400 {
-            background-color: #68d391;
-        }
-        .dark-mode .heatmap-day.bg-green-500 {
-            background-color: #9ae6b4;
-        }
-        .dark-mode .heatmap-day.bg-green-600 {
-            background-color: #b2f5ea;
-        }
-        .dark-mode .heatmap-day.bg-green-700 {
-            background-color: #e6fffa;
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .modal {
-            display: none;
-        }
-        .modal:not(.hidden) {
-            display: flex;
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
-<body>
-    <div id="auth-section" class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
-            <h1 id="auth-title" class="text-2xl font-bold mb-6 text-center"></h1>
-            <div id="auth-message" class="hidden text-center text-red-600 dark:text-red-400 mb-4"></div>
-            
-            <!-- Login Form -->
-            <div id="login-form" class="space-y-4">
-                <div>
-                    <label id="login-email-label" for="login-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                    <input type="email" id="login-email" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Email">
+<body class="min-h-screen bg-gray-50">
+    <!-- Header with Prayer Times -->
+    <header class="bg-gradient-to-r from-blue-900 to-teal-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-2xl font-bold">Omar's <span class="text-teal-300">7 Core Domains</span></h1>
+                    <p class="text-sm opacity-80">Integrating Deen, Health, and Productivity</p>
                 </div>
-                <div>
-                    <label id="login-password-label" for="login-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                    <input type="password" id="login-password" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Password">
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 w-full md:w-auto">
+                    <h3 class="text-center text-sm mb-2 font-medium">Today's Prayer Times</h3>
+                    <div class="flex justify-between space-x-2">
+                        <div class="prayer-time text-center px-2 py-1 rounded-lg" id="fajr">
+                            <div class="font-bold">Fajr</div>
+                            <div class="text-xs">5:14 AM</div>
+                        </div>
+                        <div class="prayer-time text-center px-2 py-1 rounded-lg" id="dhuhr">
+                            <div class="font-bold">Dhuhr</div>
+                            <div class="text-xs">12:30 PM</div>
+                        </div>
+                        <div class="prayer-time text-center px-2 py-1 rounded-lg" id="asr">
+                            <div class="font-bold">Asr</div>
+                            <div class="text-xs">3:45 PM</div>
+                        </div>
+                        <div class="prayer-time text-center px-2 py-1 rounded-lg" id="maghrib">
+                            <div class="font-bold">Maghrib</div>
+                            <div class="text-xs">6:22 PM</div>
+                        </div>
+                        <div class="prayer-time text-center px-2 py-1 rounded-lg" id="isha">
+                            <div class="font-bold">Isha</div>
+                            <div class="text-xs">7:45 PM</div>
+                        </div>
+                    </div>
                 </div>
-                <button id="login-btn" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
-                <p id="no-account-text" class="text-center text-sm text-gray-600 dark:text-gray-400"></p>
-                <a id="show-signup" href="#" class="block text-center text-green-600 hover:underline"></a>
-            </div>
-            
-            <!-- Signup Form -->
-            <div id="signup-form" class="space-y-4 hidden">
-                <div>
-                    <label id="signup-name-label" for="signup-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                    <input type="text" id="signup-name" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Name">
+                
+                <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                    <div class="text-center">
+                        <div class="text-xs opacity-80">Today's Date</div>
+                        <div class="font-bold arabic text-lg">١٣ ذو الحجة ١١٤٤٤</div>
+                        <div class="text-sm">June 30, 2023</div>
+                    </div>
                 </div>
-                <div>
-                    <label id="signup-email-label" for="signup-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                    <input type="email" id="signup-email" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Email">
-                </div>
-                <div>
-                    <label id="signup-password-label" for="signup-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                    <input type="password" id="signup-password" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Password">
-                </div>
-                <div>
-                    <label id="signup-memorized-label" for="signup-memorized" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                    <input type="number" id="signup-memorized" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Total verses memorized">
-                </div>
-                <button id="signup-btn" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
-                <p id="have-account-text" class="text-center text-sm text-gray-600 dark:text-gray-400"></p>
-                <a id="show-login" href="#" class="block text-center text-green-600 hover:underline"></a>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div id="main-app" class="min-h-screen p-6 hidden">
-        <header class="flex justify-between items-center mb-6">
-            <h1 id="welcome-text" class="text-2xl font-bold flex items-center"></h1>
-            <div class="flex items-center space-x-4">
-                <select id="language-toggle" class="border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                </select>
-                <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Toggle theme">
-                    <i class="fas fa-moon text-gray-700 dark:text-gray-300"></i>
-                    <i class="fas fa-sun text-gray-700 dark:text-gray-300 hidden"></i>
-                </button>
-                <img id="profile-avatar" class="w-10 h-10 rounded-full cursor-pointer" alt="Profile avatar">
-                <button id="logout-btn" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"></button>
+    <!-- Main Dashboard -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow p-4 flex items-center">
+                <div class="bg-blue-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-book-quran text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Qur'an Progress</div>
+                    <div class="font-bold">Juz <span id="current-juz">12</span> (32%)</div>
+                </div>
             </div>
-        </header>
-        <p id="track-progress" class="text-gray-600 dark:text-gray-400 mb-6"></p>
-
-        <!-- Daily Progress -->
-        <section class="mb-8">
-            <h2 id="daily-progress-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
-            <div id="daily-form" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <div class="space-y-4">
-                    <div>
-                        <label id="memorized-today-label" for="verses" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input type="number" id="verses" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Verses memorized today">
+            
+            <div class="bg-white rounded-xl shadow p-4 flex items-center">
+                <div class="bg-green-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-mosque text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Mosque Attendance</div>
+                    <div class="font-bold"><span id="mosque-percent">86</span>% This Week</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-4 flex items-center">
+                <div class="bg-purple-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-dumbbell text-purple-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Workouts</div>
+                    <div class="font-bold"><span id="workouts-count">3</span>/4 This Week</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-4 flex items-center">
+                <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-coins text-yellow-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Savings</div>
+                    <div class="font-bold">EGP <span id="savings-amount">5,200</span>/10k</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Domain Overview -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">7 Core Domains Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Qur'an Memorization -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-blue-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-book-quran mr-2"></i>Qur'an Memorization</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Daily</span>
+                        </div>
                     </div>
-                    <div>
-                        <label id="read-today-label" for="pages" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input type="number" id="pages" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Pages read today">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Current Streak</div>
+                                <div class="font-bold flex items-center">
+                                    14 days <i class="fas fa-fire streak-flame ml-2 text-orange-500"></i>
+                                </div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#3b82f6" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="85.4" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">68%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Today's Goal</span>
+                                <span>1 page</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-plus-circle mr-1"></i> Log Progress
+                        </button>
                     </div>
-                    <div>
-                        <label id="revised-today-label" for="revised" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input type="number" id="revised" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Pages revised today">
+                </div>
+                
+                <!-- Prayer Excellence -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-green-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-mosque mr-2"></i>Prayer Excellence</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">5x Daily</span>
+                        </div>
                     </div>
-                    <div>
-                        <label id="surah-label" for="surah" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <select id="surah" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Current surah"></select>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Mosque Rate</div>
+                                <div class="font-bold">86% This Week</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#10b981" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="17.6" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">86%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Today's Prayers</span>
+                                <span>2/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-green-100 hover:bg-green-200 text-green-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-check-circle mr-1"></i> Mark Completed
+                        </button>
                     </div>
-                    <div>
-                        <label id="notes-label" for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <textarea id="notes" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" rows="4" aria-label="Notes"></textarea>
+                </div>
+                
+                <!-- Islamic Knowledge -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-purple-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-graduation-cap mr-2"></i>Islamic Knowledge</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Weekly</span>
+                        </div>
                     </div>
-                    <div class="flex space-x-4">
-                        <button id="daily-submit" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
-                        <button id="open-verse-modal" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></button>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Current Study</div>
+                                <div class="font-bold">Fiqh of Marriage</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#8b5cf6" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="62.8" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">50%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Weekly Goal</span>
+                                <span>3/5 sessions</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-book-open mr-1"></i> Study Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Career Growth -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-amber-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-briefcase mr-2"></i>Career Growth</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Daily</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Job Applications</div>
+                                <div class="font-bold">12/30 This Month</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#f59e0b" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="75.4" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">40%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Certification</span>
+                                <span>Biomedical Eng</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-amber-600 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-tasks mr-1"></i> Track Progress
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Health & Recovery -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-red-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-heartbeat mr-2"></i>Health & Recovery</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Daily</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Sleep Quality</div>
+                                <div class="font-bold">82% Avg</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#ef4444" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="22.6" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">82%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Workouts</span>
+                                <span>3/4 This Week</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-600 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-red-100 hover:bg-red-200 text-red-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-dumbbell mr-1"></i> Log Activity
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Financial Growth -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-emerald-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-coins mr-2"></i>Financial Growth</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Weekly</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Savings Rate</div>
+                                <div class="font-bold">32% of Income</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#10b981" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="85.4" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">32%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Investment Goal</span>
+                                <span>EGP 10,000/mo</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-emerald-600 h-2 rounded-full" style="width: 52%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-chart-line mr-1"></i> Track Finances
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Marriage Readiness -->
+                <div class="domain-card bg-white rounded-xl shadow overflow-hidden transition-all duration-300">
+                    <div class="bg-pink-600 p-4 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-heart mr-2"></i>Marriage Readiness</h3>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Monthly</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <div class="text-sm text-gray-500">Financial Goal</div>
+                                <div class="font-bold">EGP 50,000</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="progress-ring w-full h-full" width="120" height="120">
+                                    <circle class="progress-ring__circle" stroke="#e0e0e0" stroke-width="6" fill="transparent" r="20" cx="24" cy="24"/>
+                                    <circle class="progress-ring__circle" stroke="#ec4899" stroke-width="6" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.6" stroke-dashoffset="100.5" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">20%</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Knowledge Progress</span>
+                                <span>Fiqh of Marriage</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-pink-600 h-2 rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-pink-100 hover:bg-pink-200 text-pink-800 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-book mr-1"></i> Continue Study
+                        </button>
                     </div>
                 </div>
             </div>
-            <div id="daily-message" class="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow hidden">
-                <p id="submitted-today-text" class="text-green-700 dark:text-green-300"></p>
-                <button id="edit-today-btn" class="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></button>
-            </div>
-            <div id="edit-form" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hidden">
-                <h3 id="edit-progress-title" class="text-lg font-semibold mb-4"></h3>
-                <div class="space-y-4">
-                    <div>
-                        <label id="edit-memorized-label" for="edit-verses" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input type="number" id="edit-verses" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit verses memorized">
+        </div>
+        
+        <!-- Daily Schedule & Progress -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Daily Schedule -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow overflow-hidden">
+                <div class="bg-gray-800 p-4 text-white">
+                    <h2 class="font-bold flex items-center">
+                        <i class="fas fa-calendar-day mr-2"></i> Today's Schedule
+                        <span class="ml-auto text-sm bg-white/20 px-2 py-1 rounded-full">Flexible Mode</span>
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <div class="space-y-3">
+                        <div class="checklist-item flex items-center p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer border border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-check text-green-600"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="font-medium">Fajr Prayer at Mosque</div>
+                                <div class="text-xs text-gray-500">4:30 AM - 5:00 AM</div>
+                            </div>
+                            <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Completed</div>
+                        </div>
+                        
+                        <div class="checklist-item flex items-center p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer border border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-book-quran text-blue-600"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="font-medium">Qur'an Memorization (Page 14)</div>
+                                <div class="text-xs text-gray-500">5:15 AM - 6:00 AM</div>
+                            </div>
+                            <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">In Progress</div>
+                        </div>
+                        
+                        <div class="checklist-item flex items-center p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer border border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-walking text-gray-600"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="font-medium">Walk + Tafseer Podcast</div>
+                                <div class="text-xs text-gray-500">6:00 AM - 6:45 AM</div>
+                            </div>
+                            <div class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">Upcoming</div>
+                        </div>
+                        
+                        <div class="checklist-item flex items-center p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer border border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-dumbbell text-gray-600"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="font-medium">Gym Session (Strength)</div>
+                                <div class="text-xs text-gray-500">9:00 AM - 10:30 AM</div>
+                            </div>
+                            <div class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">Upcoming</div>
+                        </div>
+                        
+                        <div class="checklist-item flex items-center p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer border border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-briefcase text-gray-600"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="font-medium">Job Applications (3/5)</div>
+                                <div class="text-xs text-gray-500">3:00 PM - 4:30 PM</div>
+                            </div>
+                            <div class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">Upcoming</div>
+                        </div>
+                        
+                        <div class="checklist-item flex items-center p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer border border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-book text-gray-600"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="font-medium">Islamic Knowledge Study</div>
+                                <div class="text-xs text-gray-500">8:00 PM - 8:30 PM</div>
+                            </div>
+                            <div class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">Upcoming</div>
+                        </div>
                     </div>
-                    <div>
-                        <label id="edit-read-label" for="edit-pages" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input type="number" id="edit-pages" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit pages read">
-                    </div>
-                    <div>
-                        <label id="edit-revised-label" for="edit-revised" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input type="number" id="edit-revised" min="0" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit pages revised">
-                    </div>
-                    <div>
-                        <label id="edit-surah-label" for="edit-surah" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <select id="edit-surah" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Edit current surah"></select>
-                    </div>
-                    <div>
-                        <label id="edit-notes-label" for="edit-notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <textarea id="edit-notes" class="mt-1 block w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500" rows="4" aria-label="Edit notes"></textarea>
-                    </div>
-                    <button id="edit-submit" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
+                    
+                    <button class="w-full mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium transition">
+                        <i class="fas fa-plus-circle mr-1"></i> Add Custom Task
+                    </button>
                 </div>
             </div>
-        </section>
-
-        <!-- Stats -->
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <h3 id="total-memorized-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
-                <p id="total-memorized" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
-                <p id="today-memorized" class="text-sm text-gray-600 dark:text-gray-400"></p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <h3 id="surahs-memorized-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
-                <p id="surahs-memorized" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
-                <p id="quran-progress" class="text-sm text-gray-600 dark:text-gray-400"></p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <h3 id="total-read-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
-                <p id="total-read" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
-                <p id="today-read" class="text-sm text-gray-600 dark:text-gray-400"></p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <h3 id="total-revised-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
-                <p id="total-revised" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
-                <p id="today-revised" class="text-sm text-gray-600 dark:text-gray-400"></p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <h3 id="current-streak-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
-                <p id="current-streak" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
-                <p id="dont-break" class="text-sm text-gray-600 dark:text-gray-400"></p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <h3 id="level-title" class="text-sm font-medium text-gray-700 dark:text-gray-300"></h3>
-                <p id="level" class="text-2xl font-bold text-green-600 dark:text-green-400"></p>
-                <p id="points" class="text-sm text-gray-600 dark:text-gray-400"></p>
-            </div>
-        </section>
-
-        <!-- Recent Activity -->
-        <section class="mb-8">
-            <h2 id="recent-activity-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
-            <div id="activity-list" class="space-y-4"></div>
-            <a id="view-all-activity" href="#" class="block text-green-600 hover:underline mt-4"></a>
-        </section>
-
-        <!-- Surah Progress -->
-        <section class="mb-8">
-            <h2 id="surah-progress-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
-            <div id="surah-progress-list" class="space-y-4"></div>
-            <button id="add-surah-btn" class="mt-4 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
-        </section>
-
-        <!-- Heatmap -->
-        <section class="mb-8">
-            <h2 id="heatmap-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
-            <div id="heatmap" class="heatmap"></div>
-            <p id="heatmap-legend" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
-        </section>
-
-        <!-- Badges -->
-        <section class="mb-8">
-            <h2 id="badges-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
-            <div id="badges-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-            <p id="badges-unlocked" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
-            <a id="view-all-badges" href="#" class="block text-green-600 hover:underline mt-2"></a>
-        </section>
-
-        <!-- Verse Modal -->
-        <div id="verseModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h2 id="verse-modal-title" class="text-xl font-semibold mb-4 flex items-center"></h2>
-                <div class="mb-4">
-                    <span id="verse-modal-surah" class="font-medium text-gray-700 dark:text-gray-300"></span> - 
-                    <span id="verse-modal-verses" class="text-gray-600 dark:text-gray-400"></span>
+            
+            <!-- Progress Charts -->
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="bg-gray-800 p-4 text-white">
+                    <h2 class="font-bold flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i> Weekly Progress
+                    </h2>
                 </div>
-                <div id="verse-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
-                <div class="flex justify-end space-x-4 mt-4">
-                    <button id="reset-verses" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"></button>
-                    <button id="save-verses" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"></button>
+                <div class="p-4">
+                    <div class="mb-6">
+                        <h3 class="text-sm font-medium mb-2 text-gray-700">Domain Balance</h3>
+                        <canvas id="radarChart" height="200"></canvas>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-sm font-medium mb-2 text-gray-700">Habit Streaks</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <div class="w-24 text-sm">Qur'an</div>
+                                <div class="flex-grow flex items-center">
+                                    <div class="h-4 bg-blue-100 rounded-full mr-2" style="width: 100%">
+                                        <div class="h-4 bg-blue-600 rounded-full" style="width: 100%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold">14 days</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-24 text-sm">Mosque Prayer</div>
+                                <div class="flex-grow flex items-center">
+                                    <div class="h-4 bg-green-100 rounded-full mr-2" style="width: 100%">
+                                        <div class="h-4 bg-green-600 rounded-full" style="width: 86%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold">9 days</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-24 text-sm">Early Wake</div>
+                                <div class="flex-grow flex items-center">
+                                    <div class="h-4 bg-amber-100 rounded-full mr-2" style="width: 100%">
+                                        <div class="h-4 bg-amber-600 rounded-full" style="width: 64%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold">7 days</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-24 text-sm">Workouts</div>
+                                <div class="flex-grow flex items-center">
+                                    <div class="h-4 bg-red-100 rounded-full mr-2" style="width: 100%">
+                                        <div class="h-4 bg-red-600 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold">12 days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium mb-2 text-gray-700">Weekly Summary</h3>
+                        <div class="text-sm text-gray-700 mb-2">
+                            You're making excellent progress in Qur'an and Prayer. Focus more on Career applications and Islamic Knowledge this week.
+                        </div>
+                        <div class="text-xs bg-blue-50 text-blue-800 p-2 rounded-lg">
+                            <i class="fas fa-quote-left mr-1"></i> "And whoever relies upon Allah - then He is sufficient for him." (Qur'an 65:3)
+                        </div>
+                    </div>
                 </div>
-                <button id="closeModal" class="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 focus:outline-none">
-                    <i class="fas fa-times"></i>
+            </div>
+        </div>
+        
+        <!-- Resource Library -->
+        <div class="bg-white rounded-xl shadow overflow-hidden mb-8">
+            <div class="bg-gray-800 p-4 text-white">
+                <h2 class="font-bold flex items-center">
+                    <i class="fas fa-book-open mr-2"></i> Resource Library
+                </h2>
+            </div>
+            <div class="p-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="#" class="resource-card bg-blue-50 hover:bg-blue-100 rounded-lg p-3 transition cursor-pointer">
+                        <div class="text-blue-600 mb-2">
+                            <i class="fas fa-book-quran text-xl"></i>
+                        </div>
+                        <div class="font-medium text-sm">Five Fortresses Method</div>
+                        <div class="text-xs text-gray-500 mt-1">Qur'an Memorization</div>
+                    </a>
+                    
+                    <a href="#" class="resource-card bg-green-50 hover:bg-green-100 rounded-lg p-3 transition cursor-pointer">
+                        <div class="text-green-600 mb-2">
+                            <i class="fas fa-headphones text-xl"></i>
+                        </div>
+                        <div class="font-medium text-sm">Bayyinah Podcast</div>
+                        <div class="text-xs text-gray-500 mt-1">Tafseer Series</div>
+                    </a>
+                    
+                    <a href="#" class="resource-card bg-purple-50 hover:bg-purple-100 rounded-lg p-3 transition cursor-pointer">
+                        <div class="text-purple-600 mb-2">
+                            <i class="fas fa-dumbbell text-xl"></i>
+                        </div>
+                        <div class="font-medium text-sm">Huberman Protocol</div>
+                        <div class="text-xs text-gray-500 mt-1">Fitness Routine</div>
+                    </a>
+                    
+                    <a href="#" class="resource-card bg-amber-50 hover:bg-amber-100 rounded-lg p-3 transition cursor-pointer">
+                        <div class="text-amber-600 mb-2">
+                            <i class="fas fa-coins text-xl"></i>
+                        </div>
+                        <div class="font-medium text-sm">Investing Guide</div>
+                        <div class="text-xs text-gray-500 mt-1">Financial Growth</div>
+                    </a>
+                </div>
+                
+                <button class="w-full mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-plus-circle mr-1"></i> Add Personal Resource
                 </button>
             </div>
         </div>
+    </main>
+    
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 md:hidden">
+        <div class="flex justify-around">
+            <a href="#" class="p-3 text-center text-blue-600">
+                <i class="fas fa-home block text-xl mb-1"></i>
+                <span class="text-xs">Dashboard</span>
+            </a>
+            <a href="#" class="p-3 text-center text-gray-500">
+                <i class="fas fa-calendar block text-xl mb-1"></i>
+                <span class="text-xs">Schedule</span>
+            </a>
+            <a href="#" class="p-3 text-center text-gray-500">
+                <i class="fas fa-chart-pie block text-xl mb-1"></i>
+                <span class="text-xs">Progress</span>
+            </a>
+            <a href="#" class="p-3 text-center text-gray-500">
+                <i class="fas fa-cog block text-xl mb-1"></i>
+                <span class="text-xs">Settings</span>
+            </a>
+        </div>
+    </nav>
 
     <script>
-        // Surah Data (simplified for brevity, includes all 114 surahs)
-        const surahs = [
-            { number: 1, name: "Al-Fatiha", nameAr: "الفاتحة", verses: 7 },
-            { number: 2, name: "Al-Baqarah", nameAr: "البقرة", verses: 286 },
-            // ... (full list included in previous code, omitted here for brevity)
-            { number: 114, name: "An-Nas", nameAr: "الناس", verses: 6 }
-        ];
-
-        // Badge Definitions
-        const badges = [
-            { id: 1, name: "Beginner", nameAr: "مبتدئ", verses: 10, icon: "star" },
-            { id: 2, name: "Learner", nameAr: "متعلم", verses: 50, icon: "book" },
-            { id: 3, name: "Achiever", nameAr: "منجز", verses: 100, icon: "award" },
-            { id: 4, name: "Master", nameAr: "متقن", verses: 500, icon: "trophy" }
-        ];
-
-        // Language Translations
-        const translations = {
-            en: {
-                authTitle: "Qur'an Memorize Tracker",
-                loginEmail: "Email",
-                loginPassword: "Password",
-                loginBtn: "Login",
-                noAccount: "No account?",
-                signupLink: "Sign up",
-                signupName: "Name",
-                signupEmail: "Email",
-                signupPassword: "Password",
-                signupMemorized: "Total verses memorized so far",
-                signupBtn: "Sign Up",
-                haveAccount: "Have an account?",
-                loginLink: "Login",
-                welcome: "Welcome",
-                trackProgress: "Track your memorization progress daily",
-                logout: "Logout",
-                dailyProgress: "Today's Progress",
-                memorizedToday: "Verses Memorized",
-                readToday: "Pages Read",
-                revisedToday: "Pages Revised",
-                surah: "Current Surah",
-                notes: "Notes",
-                submit: "Save Progress",
-                markVerses: "Mark Verses",
-                submittedToday: "You have already submitted for today.",
-                editToday: "Edit Today's Submission",
-                editProgress: "Edit Today's Progress",
-                editMemorized: "Verses Memorized",
-                editRead: "Pages Read",
-                editRevised: "Pages Revised",
-                editSurah: "Current Surah",
-                editNotes: "Notes",
-                saveChanges: "Save Changes",
-                totalMemorized: "Verses Memorized",
-                surahsMemorized: "Surahs Completed",
-                totalRead: "Pages Read",
-                totalRevised: "Pages Revised",
-                currentStreak: "Current Streak",
-                level: "Level",
-                points: "Points",
-                todayMemorized: "today",
-                quranProgress: "of Qur'an",
-                dontBreak: "Don't break it!",
-                todayRevised: "today",
-                todayRead: "today",
-                recentActivity: "Recent Activity",
-                viewAll: "View All",
-                surahProgress: "Surah Progress",
-                addSurah: "Add Another Surah",
-                heatmap: "Activity Heatmap",
-                heatmapLegend: "Last 30 days of memorization activity",
-                badges: "Achievements",
-                badgesUnlocked: "unlocked",
-                viewAllBadges: "View All Achievements",
-                verseModalTitle: "Mark Verses",
-                verseModalSurah: "Surah",
-                verseModalVerses: "verses",
-                resetVerses: "Reset",
-                saveVerses: "Save Changes"
-            },
-            ar: {
-                authTitle: "متتبع حفظ القرآن",
-                loginEmail: "البريد الإلكتروني",
-                loginPassword: "كلمة المرور",
-                loginBtn: "تسجيل الدخول",
-                noAccount: "ليس لديك حساب؟",
-                signupLink: "سجل",
-                signupName: "الاسم",
-                signupEmail: "البريد الإلكتروني",
-                signupPassword: "كلمة المرور",
-                signupMemorized: "إجمالي الآيات المحفوظة حتى الآن",
-                signupBtn: "التسجيل",
-                haveAccount: "لديك حساب؟",
-                loginLink: "تسجيل الدخول",
-                welcome: "مرحبًا",
-                trackProgress: "تتبع تقدم حفظك اليومي",
-                logout: "تسجيل الخروج",
-                dailyProgress: "تقدم اليوم",
-                memorizedToday: "الآيات المحفوظة",
-                readToday: "الصفحات المقروءة",
-                revisedToday: "الصفحات المراجعة",
-                surah: "السورة الحالية",
-                notes: "ملاحظات",
-                submit: "حفظ التقدم",
-                markVerses: "وضع علامة على الآيات",
-                submittedToday: "لقد قدمت بالفعل اليوم.",
-                editToday: "تعديل تقديم اليوم",
-                editProgress: "تعديل تقدم اليوم",
-                editMemorized: "الآيات المحفوظة",
-                editRead: "الصفحات المقروءة",
-                editRevised: "الصفحات المراجعة",
-                editSurah: "السورة الحالية",
-                editNotes: "ملاحظات",
-                saveChanges: "حفظ التغييرات",
-                totalMemorized: "إجمالي الآيات المحفوظة",
-                surahsMemorized: "السور المكتملة",
-                totalRead: "إجمالي الصفحات المقروءة",
-                totalRevised: "إجمالي الصفحات المراجعة",
-                currentStreak: "السلسلة الحالية",
-                level: "المستوى",
-                points: "النقاط",
-                todayMemorized: "اليوم",
-                quranProgress: "من القرآن",
-                dontBreak: "لا تكسرها!",
-                todayRevised: "اليوم",
-                todayRead: "اليوم",
-                recentActivity: "النشاط الأخير",
-                viewAll: "عرض الكل",
-                surahProgress: "تقدم السور",
-                addSurah: "إضافة سورة أخرى",
-                heatmap: "خريطة النشاط",
-                heatmapLegend: "آخر 30 يومًا من نشاط الحفظ",
-                badges: "الإنجازات",
-                badgesUnlocked: "مفتوح",
-                viewAllBadges: "عرض كل الإنجازات",
-                verseModalTitle: "وضع علامة على الآيات",
-                verseModalSurah: "سورة",
-                verseModalVerses: "آيات",
-                resetVerses: "إعادة تعيين",
-                saveVerses: "حفظ التغييرات"
-            }
-        };
-
-        // DOM Elements
-        const authSection = document.getElementById('auth-section');
-        const mainApp = document.getElementById('main-app');
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const authMessage = document.getElementById('auth-message');
-        const showSignup = document.getElementById('show-signup');
-        const showLogin = document.getElementById('show-login');
-        const loginBtn = document.getElementById('login-btn');
-        const signupBtn = document.getElementById('signup-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const dailySubmit = document.getElementById('daily-submit');
-        const editTodayBtn = document.getElementById('edit-today-btn');
-        const editSubmit = document.getElementById('edit-submit');
-        const themeToggle = document.getElementById('theme-toggle');
-        const languageToggle = document.getElementById('language-toggle');
-        const profileAvatar = document.getElementById('profile-avatar');
-        const verseModal = document.getElementById('verseModal');
-        const closeModal = document.getElementById('closeModal');
-        const resetVerses = document.getElementById('reset-verses');
-        const saveVerses = document.getElementById('save-verses');
-        const openVerseModal = document.getElementById('open-verse-modal');
-        const addSurahBtn = document.getElementById('add-surah-btn');
-        const htmlElement = document.documentElement;
-
-        // Initialize user data
-        let users = JSON.parse(localStorage.getItem('users')) || {};
-        let userData = {};
-        let currentUserEmail = localStorage.getItem('currentUserEmail') || '';
-
-        // Check login status, theme, and language on load
-        function initializeApp() {
-            if (localStorage.getItem('isLoggedIn') === 'true' && currentUserEmail && users[currentUserEmail]) {
-                userData = users[currentUserEmail];
-                showMainApp();
-            } else {
-                authSection.classList.remove('hidden');
-                mainApp.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-                signupForm.classList.add('hidden');
-            }
-            const darkMode = localStorage.getItem('darkMode') === 'true' || 
-                             (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (darkMode) {
-                htmlElement.classList.add('dark-mode');
-                themeToggle.querySelector('.fa-moon').classList.add('hidden');
-                themeToggle.querySelector('.fa-sun').classList.remove('hidden');
-            }
-            const lang = localStorage.getItem('language') || 'en';
-            languageToggle.value = lang;
-            updateLanguage(lang);
-            populateSurahSelect();
-        }
-
-        // Event Listeners
-        themeToggle.addEventListener('click', () => {
-            htmlElement.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', htmlElement.classList.contains('dark-mode'));
-            themeToggle.querySelector('.fa-moon').classList.toggle('hidden');
-            themeToggle.querySelector('.fa-sun').classList.toggle('hidden');
-        });
-
-        languageToggle.addEventListener('change', (e) => {
-            const lang = e.target.value;
-            localStorage.setItem('language', lang);
-            updateLanguage(lang);
-            populateSurahSelect();
-            updateUI(userData);
-        });
-
-        showSignup.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginForm.classList.add('hidden');
-            signupForm.classList.remove('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        showLogin.addEventListener('click', (e) => {
-            e.preventDefault();
-            signupForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        loginBtn.addEventListener('click', () => {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            authMessage.classList.add('hidden');
-            if (!email || !password) {
-                authMessage.textContent = 'Please enter both email and password.';
-                authMessage.classList.remove('hidden');
-                return;
-            }
-            if (users[email] && users[email].password === password) {
-                currentUserEmail = email;
-                userData = users[email];
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('currentUserEmail', email);
-                showMainApp();
-                document.getElementById('login-form').reset();
-            } else {
-                authMessage.textContent = 'Invalid email or password.';
-                authMessage.classList.remove('hidden');
-            }
-        });
-
-        signupBtn.addEventListener('click', () => {
-            const name = document.getElementById('signup-name').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const totalVersesMemorized = parseInt(document.getElementById('signup-memorized').value) || 0;
-            authMessage.classList.add('hidden');
-            if (!name || !email || !password) {
-                authMessage.textContent = 'Please fill in all fields.';
-                authMessage.classList.remove('hidden');
-                return;
-            }
-            if (password.length < 6) {
-                authMessage.textContent = 'Password must be at least 6 characters long.';
-                authMessage.classList.remove('hidden');
-                return;
-            }
-            if (users[email]) {
-                authMessage.textContent = 'Email already registered. Please log in or use a different email.';
-                authMessage.classList.remove('hidden');
-                return;
-            }
-            userData = {
-                name,
-                email,
-                password,
-                totalVersesMemorized,
-                totalPagesRead: 0,
-                totalPagesRevised: 0,
-                currentStreak: 0,
-                longestStreak: 0,
-                lastActiveDate: null,
-                dailyLogs: [],
-                points: totalVersesMemorized * 10,
-                level: Math.floor(totalVersesMemorized * 10 / 100) + 1,
-                badges: [],
-                verses: {},
-                activeSurahs: []
-            };
-            users[email] = userData;
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('currentUserEmail', email);
-            showMainApp();
-            document.getElementById('signup-form').reset();
-        });
-
-        logoutBtn.addEventListener('click', () => {
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('currentUserEmail');
-            userData = {};
-            currentUserEmail = '';
-            mainApp.classList.add('hidden');
-            authSection.classList.remove('hidden');
-            loginForm.classList.remove('hidden');
-            signupForm.classList.add('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        profileAvatar.addEventListener('click', () => {
-            alert(`User: ${userData.name}`);
-        });
-
-        dailySubmit.addEventListener('click', (e) => {
-            e.preventDefault();
-            handleDailySubmission();
-        });
-
-        editTodayBtn.addEventListener('click', () => {
-            const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), new Date()));
-            if (todayLog) {
-                document.getElementById('edit-verses').value = todayLog.memorized;
-                document.getElementById('edit-pages').value = todayLog.read;
-                document.getElementById('edit-revised').value = todayLog.revised;
-                document.getElementById('edit-surah').value = todayLog.surah;
-                document.getElementById('edit-notes').value = todayLog.notes || '';
-                document.getElementById('daily-form').classList.add('hidden');
-                document.getElementById('daily-message').classList.add('hidden');
-                document.getElementById('edit-form').classList.remove('hidden');
-            }
-        });
-
-        editSubmit.addEventListener('click', () => {
-            const todayLogIndex = userData.dailyLogs.findIndex(log => isSameDay(new Date(log.date), new Date()));
-            if (todayLogIndex !== -1) {
-                const oldLog = userData.dailyLogs[todayLogIndex];
-                const newMemorized = parseInt(document.getElementById('edit-verses').value) || 0;
-                const newRead = parseInt(document.getElementById('edit-pages').value) || 0;
-                const newRevised = parseInt(document.getElementById('edit-revised').value) || 0;
-                const newSurah = document.getElementById('edit-surah').value;
-                const newNotes = document.getElementById('edit-notes').value;
-
-                if (newMemorized < 0 || newRead < 0 || newRevised < 0) {
-                    alert('Please enter non-negative numbers.');
-                    return;
-                }
-
-                userData.totalVersesMemorized = userData.totalVersesMemorized - oldLog.memorized + newMemorized;
-                userData.totalPagesRead = userData.totalPagesRead - oldLog.read + newRead;
-                userData.totalPagesRevised = userData.totalPagesRevised - oldLog.revised + newRevised;
-
-                userData.dailyLogs[todayLogIndex] = {
-                    date: new Date().toISOString(),
-                    memorized: newMemorized,
-                    read: newRead,
-                    revised: newRevised,
-                    surah: newSurah,
-                    notes: newNotes
-                };
-
-                updatePoints(userData, newMemorized - oldLog.memorized, newRead - oldLog.read, newRevised - oldLog.revised);
-                updateBadges(userData);
-                updateStreak();
-                localStorage.setItem('users', JSON.stringify(users));
-                updateUI(userData);
-                document.getElementById('edit-form').classList.add('hidden');
-                document.getElementById('daily-message').classList.remove('hidden');
-            }
-        });
-
-        openVerseModal.addEventListener('click', () => {
-            const surahNumber = document.getElementById('surah').value;
-            if (surahNumber) {
-                openVerseModalForSurah(surahNumber);
-            } else {
-                alert('Please select a surah first.');
-            }
-        });
-
-        closeModal.addEventListener('click', () => {
-            verseModal.classList.add('hidden');
-        });
-
-        verseModal.addEventListener('click', (e) => {
-            if (e.target === verseModal) {
-                verseModal.classList.add('hidden');
-            }
-        });
-
-        resetVerses.addEventListener('click', () => {
-            const surahNumber = verseModal.dataset.surahNumber;
-            if (surahNumber && userData.verses[surahNumber]) {
-                userData.verses[surahNumber] = [];
-                renderVerseModal(surahNumber);
-                userData.totalVersesMemorized = Object.values(userData.verses).reduce((sum, verses) => sum + verses.length, 0);
-                updatePoints(userData, 0, 0, 0);
-                updateBadges(userData);
-                localStorage.setItem('users', JSON.stringify(users));
-                updateUI(userData);
-            }
-        });
-
-        saveVerses.addEventListener('click', () => {
-            const surahNumber = verseModal.dataset.surahNumber;
-            if (surahNumber) {
-                const checkboxes = document.querySelectorAll('#verse-list input[type="checkbox"]');
-                const memorizedVerses = [];
-                checkboxes.forEach((checkbox, index) => {
-                    if (checkbox.checked) {
-                        memorizedVerses.push(index + 1);
-                    }
-                });
-                userData.verses[surahNumber] = memorizedVerses;
-                const prevVerses = userData.totalVersesMemorized;
-                userData.totalVersesMemorized = Object.values(userData.verses).reduce((sum, verses) => sum + verses.length, 0);
-                updatePoints(userData, userData.totalVersesMemorized - prevVerses, 0, 0);
-                updateBadges(userData);
-                localStorage.setItem('users', JSON.stringify(users));
-                updateUI(userData);
-                verseModal.classList.add('hidden');
-            }
-        });
-
-        addSurahBtn.addEventListener('click', () => {
-            const surahSelect = document.getElementById('surah');
-            if (surahSelect.value && !userData.activeSurahs?.includes(surahSelect.value)) {
-                userData.activeSurahs = userData.activeSurahs || [];
-                userData.activeSurahs.push(surahSelect.value);
-                localStorage.setItem('users', JSON.stringify(users));
-                updateSurahProgress();
-            }
-        });
-
-        // Utility Functions
-        function isSameDay(date1, date2) {
-            return date1.getFullYear() === date2.getFullYear() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getDate() === date2.getDate();
-        }
-
-        function getMemorizationStats(totalVersesMemorized) {
-            let fullyMemorized = 0;
-            let currentSurah = null;
-            let currentProgress = 0;
-            let cumulativeVerses = 0;
-            const totalQuranVerses = surahs.reduce((sum, surah) => sum + surah.verses, 0);
-
-            for (const surah of surahs) {
-                cumulativeVerses += surah.verses;
-                if (totalVersesMemorized >= cumulativeVerses) {
-                    fullyMemorized++;
-                } else {
-                    currentSurah = surah;
-                    const versesInSurah = surah.verses;
-                    const versesMemorizedInSurah = totalVersesMemorized - (cumulativeVerses - surah.verses);
-                    currentProgress = (versesMemorizedInSurah / versesInSurah) * 100;
+        // Update active prayer time
+        function updateActivePrayer() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const currentTime = hours * 60 + minutes;
+            
+            const prayerTimes = [
+                { id: 'fajr', time: 5 * 60 + 14 },
+                { id: 'dhuhr', time: 12 * 60 + 30 },
+                { id: 'asr', time: 15 * 60 + 45 },
+                { id: 'maghrib', time: 18 * 60 + 22 },
+                { id: 'isha', time: 19 * 60 + 45 }
+            ];
+            
+            // Remove active class from all
+            prayerTimes.forEach(prayer => {
+                document.getElementById(prayer.id).classList.remove('active');
+            });
+            
+            // Find current or next prayer
+            let activePrayer = null;
+            for (let i = 0; i < prayerTimes.length; i++) {
+                if (currentTime < prayerTimes[i].time || 
+                    (i === prayerTimes.length - 1 && currentTime > prayerTimes[i].time)) {
+                    activePrayer = prayerTimes[i];
                     break;
                 }
             }
-
-            return { fullyMemorized, currentSurah, currentProgress, quranProgress: (totalVersesMemorized / totalQuranVerses) * 100 };
-        }
-
-        function updatePoints(userData, memorizedToday, readToday, revisedToday) {
-            const pointsEarned = (memorizedToday * 10) + (readToday * 2) + (revisedToday * 5);
-            userData.points = (userData.points || 0) + pointsEarned;
-            const levelThreshold = 100;
-            userData.level = Math.floor(userData.points / levelThreshold) + 1;
-        }
-
-        function updateBadges(userData) {
-            const earnedBadges = badges.filter(badge => userData.totalVersesMemorized >= badge.verses)
-                .map(badge => badge.id);
-            userData.badges = earnedBadges;
-            localStorage.setItem('users', JSON.stringify(users));
-
-            const badgesList = document.getElementById('badges-list');
-            badgesList.innerHTML = '';
-            badges.forEach(badge => {
-                const isEarned = userData.badges.includes(badge.id);
-                const div = document.createElement('div');
-                div.className = `badge p-3 rounded-lg flex flex-col items-center justify-center ${isEarned ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-700 opacity-50'}`;
-                div.innerHTML = `
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1 ${isEarned ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}">
-                        <i class="fas fa-${badge.icon} text-white"></i>
-                    </div>
-                    <span class="text-xs font-medium text-center">${languageToggle.value === 'ar' ? badge.nameAr : badge.name}</span>
-                `;
-                badgesList.appendChild(div);
-            });
-            document.getElementById('badges-unlocked').textContent = `${userData.badges.length}/${badges.length} ${translations[languageToggle.value].badgesUnlocked}`;
-        }
-
-        function updateStreak() {
-            const today = new Date();
-            const lastActive = userData.lastActiveDate ? new Date(userData.lastActiveDate) : null;
-            if (lastActive && isSameDay(lastActive, new Date(today.setDate(today.getDate() - 1)))) {
-                userData.currentStreak++;
-            } else if (!lastActive || !isSameDay(lastActive, today)) {
-                userData.currentStreak = 1;
-            }
-            userData.longestStreak = Math.max(userData.longestStreak, userData.currentStreak);
-            userData.lastActiveDate = new Date().toISOString();
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        function populateSurahSelect() {
-            const surahSelect = document.getElementById('surah');
-            const editSurahSelect = document.getElementById('edit-surah');
-            surahSelect.innerHTML = `<option value="">${translations[languageToggle.value].surah}</option>`;
-            editSurahSelect.innerHTML = `<option value="">${translations[languageToggle.value].surah}</option>`;
-            surahs.forEach(surah => {
-                const option = document.createElement('option');
-                option.value = surah.number;
-                option.textContent = languageToggle.value === 'ar' ? `${surah.number}. ${surah.nameAr}` : `${surah.number}. ${surah.name}`;
-                surahSelect.appendChild(option);
-                editSurahSelect.appendChild(option.cloneNode(true));
-            });
-        }
-
-        function openVerseModalForSurah(surahNumber) {
-            const surah = surahs.find(s => s.number == surahNumber);
-            if (!surah) return;
-            verseModal.dataset.surahNumber = surahNumber;
-            document.getElementById('verse-modal-surah').textContent = languageToggle.value === 'ar' ? surah.nameAr : surah.name;
-            document.getElementById('verse-modal-verses').textContent = `${surah.verses} ${translations[languageToggle.value].verseModalVerses}`;
-            renderVerseModal(surahNumber);
-            verseModal.classList.remove('hidden');
-        }
-
-        function renderVerseModal(surahNumber) {
-            const surah = surahs.find(s => s.number == surahNumber);
-            const verseList = document.getElementById('verse-list');
-            verseList.innerHTML = '';
-            for (let i = 1; i <= surah.verses; i++) {
-                const div = document.createElement('div');
-                div.className = 'verse-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between cursor-pointer';
-                div.innerHTML = `
-                    <span class="text-gray-700 dark:text-gray-300">Verse ${i}</span>
-                    <input type="checkbox" class="h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500" ${userData.verses[surahNumber]?.includes(i) ? 'checked' : ''}>
-                `;
-                verseList.appendChild(div);
+            
+            if (activePrayer) {
+                document.getElementById(activePrayer.id).classList.add('active');
             }
         }
-
-        function updateSurahProgress() {
-            const surahProgressList = document.getElementById('surah-progress-list');
-            surahProgressList.innerHTML = '';
-            const activeSurahs = userData.activeSurahs || [];
-            activeSurahs.forEach(surahNumber => {
-                const surah = surahs.find(s => s.number == surahNumber);
-                if (!surah) return;
-                const memorizedVerses = userData.verses[surahNumber]?.length || 0;
-                const progress = (memorizedVerses / surah.verses) * 100;
-                const div = document.createElement('div');
-                div.className = 'mb-4';
-                div.innerHTML = `
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${languageToggle.value === 'ar' ? surah.nameAr : surah.name} (${surah.number})</span>
-                        <span class="text-sm font-medium text-green-600 dark:text-green-400">${memorizedVerses}/${surah.verses} (${Math.round(progress)}%)</span>
-                    </div>
-                    <div class="progress-bar cursor-pointer" data-surah="${surahNumber}">
-                        <div class="progress-fill" style="width: ${progress}%"></div>
-                    </div>
-                `;
-                surahProgressList.appendChild(div);
-            });
-
-            document.querySelectorAll('.progress-bar').forEach(bar => {
-                bar.addEventListener('click', () => {
-                    openVerseModalForSurah(bar.dataset.surah);
-                });
-            });
-        }
-
-        function renderHeatmap() {
-            const heatmap = document.getElementById('heatmap');
-            heatmap.innerHTML = '';
-            const today = new Date();
-            for (let i = 29; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(today.getDate() - i);
-                const log = userData.dailyLogs.find(log => isSameDay(new Date(log.date), date));
-                const verses = log?.memorized || 0;
-                const intensity = verses >= 20 ? 'bg-green-700' : verses >= 15 ? 'bg-green-600' : verses >= 10 ? 'bg-green-500' : verses >= 5 ? 'bg-green-400' : verses >= 3 ? 'bg-green-300' : verses >= 1 ? 'bg-green-200' : 'bg-green-100';
-                const div = document.createElement('div');
-                div.className = `heatmap-day ${intensity} dark:${intensity.replace('bg-green-', 'bg-green-')}` + (i === 0 ? ' border-2 border-green-500' : '');
-                div.title = `${verses} verses on ${date.toLocaleDateString()}`;
-                heatmap.appendChild(div);
-            }
-        }
-
-        function updateRecentActivity() {
-            const activityList = document.getElementById('activity-list');
-            activityList.innerHTML = '';
-            const recentLogs = userData.dailyLogs.slice(-3).reverse();
-            recentLogs.forEach(log => {
-                const surah = surahs.find(s => s.number == log.surah);
-                const div = document.createElement('div');
-                div.className = 'activity-item animate-fade-in p-3 border-l-4 border-green-500 bg-green-50 dark:bg-gray-700 rounded-r-lg';
-                div.innerHTML = `
-                    <div class="flex justify-between">
-                        <div>
-                            <p class="font-medium">${log.memorized > 0 ? `Memorized ${log.memorized} verses${surah ? ` from ${languageToggle.value === 'ar' ? surah.nameAr : surah.name}` : ''}` : ''}${log.read > 0 ? `${log.memorized > 0 ? ', ' : ''}Read ${log.read} pages` : ''}${log.revised > 0 ? `${log.memorized > 0 || log.read > 0 ? ', ' : ''}Revised ${log.revised} pages` : ''}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">${new Date(log.date).toLocaleString()}</p>
-                        </div>
-                        <div class="text-green-600 dark:text-green-400">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                    </div>
-                `;
-                activityList.appendChild(div);
+        
+        // Initialize radar chart
+        function initRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Qur\'an', 'Prayer', 'Knowledge', 'Career', 'Health', 'Finance', 'Marriage'],
+                    datasets: [{
+                        label: 'This Week',
+                        data: [85, 86, 60, 40, 75, 52, 45],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+                    }, {
+                        label: 'Last Week',
+                        data: [80, 78, 55, 35, 70, 45, 40],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
             });
         }
-
-        function handleDailySubmission() {
-            const verses = parseInt(document.getElementById('verses').value) || 0;
-            const pages = parseInt(document.getElementById('pages').value) || 0;
-            const revised = parseInt(document.getElementById('revised').value) || 0;
-            const surah = document.getElementById('surah').value;
-            const notes = document.getElementById('notes').value;
-
-            if (verses < 0 || pages < 0 || revised < 0) {
-                alert('Please enter non-negative numbers.');
-                return;
-            }
-
-            const today = new Date();
-            const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), today));
-            if (todayLog) {
-                document.getElementById('daily-form').classList.add('hidden');
-                document.getElementById('daily-message').classList.remove('hidden');
-                return;
-            }
-
-            userData.totalVersesMemorized += verses;
-            userData.totalPagesRead += pages;
-            userData.totalPagesRevised += revised;
-            userData.dailyLogs.push({
-                date: today.toISOString(),
-                memorized: verses,
-                read: pages,
-                revised: revised,
-                surah: surah,
-                notes: notes
-            });
-
-            updatePoints(userData, verses, pages, revised);
-            updateBadges(userData);
-            updateStreak();
-            localStorage.setItem('users', JSON.stringify(users));
-            updateUI(userData);
-            document.getElementById('verses').value = '';
-            document.getElementById('pages').value = '';
-            document.getElementById('revised').value = '';
-            document.getElementById('surah').value = '';
-            document.getElementById('notes').value = '';
-            document.getElementById('daily-form').classList.add('hidden');
-            document.getElementById('daily-message').classList.remove('hidden');
-        }
-
-        function showMainApp() {
-            authSection.classList.add('hidden');
-            mainApp.classList.remove('hidden');
-            document.getElementById('profile-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=0A5E2A&color=fff`;
-            updateUI(userData);
-        }
-
-        function updateUI(userData) {
-            const stats = getMemorizationStats(userData.totalVersesMemorized);
-            document.getElementById('total-memorized').textContent = userData.totalVersesMemorized;
-            document.getElementById('surahs-memorized').textContent = stats.fullyMemorized;
-            document.getElementById('total-read').textContent = userData.totalPagesRead;
-            document.getElementById('total-revised').textContent = userData.totalPagesRevised;
-            document.getElementById('current-streak').textContent = `${userData.currentStreak} days`;
-            document.getElementById('level').textContent = userData.level;
-            document.getElementById('points').textContent = userData.points;
-            document.getElementById('quran-progress').textContent = `<i class="fas fa-trophy mr-1"></i> ${Math.round(stats.quranProgress)}% ${translations[languageToggle.value].quranProgress}`;
-
-            const todayLog = userData.dailyLogs.find(log => isSameDay(new Date(log.date), new Date()));
-            document.getElementById('today-memorized').textContent = `<i class="fas fa-arrow-up mr-1"></i> ${todayLog ? todayLog.memorized : 0} ${translations[languageToggle.value].todayMemorized}`;
-            document.getElementById('today-read').textContent = `<i class="fas fa-check-circle mr-1"></i> ${todayLog ? todayLog.read : 0} ${translations[languageToggle.value].todayRead}`;
-            document.getElementById('today-revised').textContent = `<i class="fas fa-check-circle mr-1"></i> ${todayLog ? todayLog.revised : 0} ${translations[languageToggle.value].todayRevised}`;
-
-            if (todayLog) {
-                document.getElementById('daily-form').classList.add('hidden');
-                document.getElementById('daily-message').classList.remove('hidden');
-            } else {
-                document.getElementById('daily-form').classList.remove('hidden');
-                document.getElementById('daily-message').classList.add('hidden');
-            }
-
-            updateRecentActivity();
-            updateSurahProgress();
-            renderHeatmap();
-            updateBadges(userData);
-        }
-
-        function updateLanguage(lang) {
-            htmlElement.setAttribute('lang', lang);
-            htmlElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-            document.getElementById('auth-title').textContent = translations[lang].authTitle;
-            document.getElementById('login-email-label').textContent = translations[lang].loginEmail;
-            document.getElementById('login-password-label').textContent = translations[lang].loginPassword;
-            document.getElementById('login-btn').textContent = translations[lang].loginBtn;
-            document.getElementById('no-account-text').textContent = translations[lang].noAccount;
-            document.getElementById('show-signup').textContent = translations[lang].signupLink;
-            document.getElementById('signup-name-label').textContent = translations[lang].signupName;
-            document.getElementById('signup-email-label').textContent = translations[lang].signupEmail;
-            document.getElementById('signup-password-label').textContent = translations[lang].signupPassword;
-            document.getElementById('signup-memorized-label').textContent = translations[lang].signupMemorized;
-            document.getElementById('signup-btn').textContent = translations[lang].signupBtn;
-            document.getElementById('have-account-text').textContent = translations[lang].haveAccount;
-            document.getElementById('show-login').textContent = translations[lang].loginLink;
-            document.getElementById('welcome-text').innerHTML = `<i class="fas fa-book-quran mr-2"></i> ${translations[lang].welcome}, ${userData.name || ''}`;
-            document.getElementById('track-progress').textContent = translations[lang].trackProgress;
-            document.getElementById('logout-btn').textContent = translations[lang].logout;
-            document.getElementById('daily-progress-title').innerHTML = `<i class="fas fa-plus-circle mr-2"></i> ${translations[lang].dailyProgress}`;
-            document.getElementById('memorized-today-label').textContent = translations[lang].memorizedToday;
-            document.getElementById('read-today-label').textContent = translations[lang].readToday;
-            document.getElementById('revised-today-label').textContent = translations[lang].revisedToday;
-            document.getElementById('surah-label').textContent = translations[lang].surah;
-            document.getElementById('notes-label').textContent = translations[lang].notes;
-            document.getElementById('daily-submit').innerHTML = `<i class="fas fa-save mr-2"></i> ${translations[lang].submit}`;
-            document.getElementById('open-verse-modal').innerHTML = `<i class="fas fa-edit mr-2"></i> ${translations[lang].markVerses}`;
-            document.getElementById('submitted-today-text').textContent = translations[lang].submittedToday;
-            document.getElementById('edit-today-btn').textContent = translations[lang].editToday;
-            document.getElementById('edit-progress-title').textContent = translations[lang].editProgress;
-            document.getElementById('edit-memorized-label').textContent = translations[lang].editMemorized;
-            document.getElementById('edit-read-label').textContent = translations[lang].editRead;
-            document.getElementById('edit-revised-label').textContent = translations[lang].editRevised;
-            document.getElementById('edit-surah-label').textContent = translations[lang].editSurah;
-            document.getElementById('edit-notes-label').textContent = translations[lang].editNotes;
-            document.getElementById('edit-submit').textContent = translations[lang].saveChanges;
-            document.getElementById('total-memorized-title').textContent = translations[lang].totalMemorized;
-            document.getElementById('surahs-memorized-title').textContent = translations[lang].surahsMemorized;
-            document.getElementById('total-read-title').textContent = translations[lang].totalRead;
-            document.getElementById('total-revised-title').textContent = translations[lang].totalRevised;
-            document.getElementById('current-streak-title').textContent = translations[lang].currentStreak;
-            document.getElementById('dont-break').textContent = translations[lang].dontBreak;
-            document.getElementById('level-title').textContent = translations[lang].level;
-            document.getElementById('points').textContent = userData.points || 0;
-            document.getElementById('recent-activity-title').innerHTML = `<i class="fas fa-history mr-2"></i> ${translations[lang].recentActivity}`;
-            document.getElementById('view-all-activity').textContent = translations[lang].viewAll;
-            document.getElementById('surah-progress-title').innerHTML = `<i class="fas fa-book-open mr-2"></i> ${translations[lang].surahProgress}`;
-            document.getElementById('add-surah-btn').textContent = translations[lang].addSurah;
-            document.getElementById('heatmap-title').innerHTML = `<i class="fas fa-chart-bar mr-2"></i> ${translations[lang].heatmap}`;
-            document.getElementById('heatmap-legend').textContent = translations[lang].heatmapLegend;
-            document.getElementById('badges-title').innerHTML = `<i class="fas fa-medal mr-2"></i> ${translations[lang].badges}`;
-            document.getElementById('view-all-badges').textContent = translations[lang].viewAllBadges;
-            document.getElementById('verse-modal-title').innerHTML = `<i class="fas fa-book-reader mr-2"></i> ${translations[lang].verseModalTitle}`;
-            document.getElementById('reset-verses').textContent = translations[lang].resetVerses;
-            document.getElementById('save-verses').textContent = translations[lang].saveVerses;
-        }
-
-        // Initialize app
-        initializeApp();
+        
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateActivePrayer();
+            initRadarChart();
+            
+            // Update prayer times every minute
+            setInterval(updateActivePrayer, 60000);
+            
+            // Simulate progress updates (in a real app, this would come from backend)
+            setInterval(function() {
+                const mosquePercent = document.getElementById('mosque-percent');
+                const currentPercent = parseInt(mosquePercent.textContent);
+                mosquePercent.textContent = currentPercent < 100 ? currentPercent + 1 : 100;
+                
+                const workoutsCount = document.getElementById('workouts-count');
+                if (Math.random() > 0.7 && parseInt(workoutsCount.textContent) < 4) {
+                    workoutsCount.textContent = parseInt(workoutsCount.textContent) + 1;
+                }
+                
+                const savingsAmount = document.getElementById('savings-amount');
+                if (Math.random() > 0.8) {
+                    const current = parseInt(savingsAmount.textContent.replace(/,/g, ''));
+                    savingsAmount.textContent = (current + 200).toLocaleString();
+                }
+            }, 5000);
+        });
     </script>
 </body>
 </html>
